@@ -85,7 +85,7 @@
         </div>
       <% } %>
 
-      <form action="/login" method="POST" class="login-form" id="loginForm">
+      <form action="/login" method="POST" class="login-form" id="loginForm" autocomplete="off">
         <!-- Hidden Role Tracker -->
         <input type="hidden" name="login_role" id="loginRoleInput" value="<%= activeTab %>">
 
@@ -100,7 +100,8 @@
               name="username" 
               class="form-control" 
               placeholder="<%= activeTab === 'admin' ? 'Enter admin username' : 'Enter worker username' %>" 
-              autocomplete="username"
+              autocomplete="off"
+              value=""
               required 
               autofocus
             >
@@ -119,7 +120,8 @@
               name="password" 
               class="form-control" 
               placeholder="Enter password" 
-              autocomplete="current-password"
+              autocomplete="new-password"
+              value=""
               required
             >
             <button type="button" class="btn-toggle-pw" onclick="togglePassword()" title="Toggle password visibility">
@@ -174,6 +176,8 @@
       const btnText = document.getElementById('btnText');
 
       roleInput.value = role;
+      usernameInput.value = '';
+      passwordInput.value = '';
 
       if (role === 'admin') {
         tabAdmin.classList.add('active');
@@ -207,6 +211,14 @@
         btnText.innerText = 'Sign In as Delivery Worker';
       }
     }
+
+    // Ensure fields are clean on initial load
+    window.addEventListener('DOMContentLoaded', () => {
+      const u = document.getElementById('username');
+      const p = document.getElementById('password');
+      if (u) u.value = '';
+      if (p) p.value = '';
+    });
   </script>
 
 </body>
