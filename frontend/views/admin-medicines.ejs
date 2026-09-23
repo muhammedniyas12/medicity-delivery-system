@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Medicine Rate Master &amp; Full Catalog | MEDICITY PHARMACEUTICAL HARIPAD</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+</head>
+
+<body>
+
+  <!-- Top Wholesale Shop Grand Header -->
+  <header class="app-header wholesale-grand-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <div class="brand-logo-icon">
+          <i class="ri-medicine-bottle-fill"></i>
+        </div>
+        <div class="brand-title">
+          <div class="wholesale-distributor-badge">
+            <i class="ri-shield-star-fill"></i> ADMINISTRATOR &bull; MEDICINE RATE MASTER
+          </div>
+          <h1 class="main-shop-heading">MEDICITY PHARMACEUTICAL HARIPAD</h1>
+          <div class="brand-subtitle">
+            <span class="location-badge"><i class="ri-map-pin-2-fill"></i> Haripad, Alappuzha</span>
+            <span>Official Medicine Rate List, GST, Tax &amp; Net Rate Controller</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation & User Controls -->
+      <div class="header-user-controls">
+        <div class="header-nav-links">
+          <a href="/" class="nav-btn"><i class="ri-dashboard-line"></i> Dashboard</a>
+          <a href="/admin/medicines" class="nav-btn active"><i class="ri-file-list-3-line"></i> Medicine Rates</a>
+          <a href="/history" class="nav-btn"><i class="ri-archive-line"></i> Delivery Slips</a>
+        </div>
+
+        <div class="user-profile-pill admin-pill">
+          <span class="user-avatar-circle admin-avatar"><i class="ri-admin-fill"></i></span>
+          <div class="user-info-text">
+            <span class="user-role">Administrator</span>
+            <span class="user-name"><%= currentUser ? currentUser.username : 'Admin' %></span>
+          </div>
+        </div>
+        <a href="/logout" class="btn btn-sm btn-logout" title="Sign Out">
+          <i class="ri-logout-box-r-line"></i> Sign Out
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Wrapper -->
+  <main class="main-wrapper" style="max-width: 1440px;">
+
+    <!-- Alert Notifications -->
+    <% if (message) { %>
+      <div class="alert alert-success">
+        <div><i class="ri-checkbox-circle-fill"></i> <%= message %></div>
+        <button onclick="this.parentElement.remove()" class="alert-close-btn"><i class="ri-close-line"></i></button>
+      </div>
+    <% } %>
+
+    <% if (error) { %>
+      <div class="alert alert-error">
+        <div><i class="ri-error-warning-fill"></i> <%= error %></div>
+        <button onclick="this.parentElement.remove()" class="alert-close-btn"><i class="ri-close-line"></i></button>
+      </div>
+    <% } %>
+
+    <!-- Medicine Master Top Hero Section -->
+    <div class="admin-master-hero">
+      <div class="hero-text-content">
+        <div class="hero-tag"><i class="ri-coins-line"></i> Complete Rate &amp; Price Master</div>
+        <h2>Pharmaceutical Rates, MRP, Tax, GST &amp; Net Rates</h2>
+        <p>Administer medicine names (Particulars), HSN/SN codes, company, batch number, expiry date, manufacturing date, MRP, stock quantity, rates, and calculate net amounts.</p>
+      </div>
+
+      <div class="hero-actions-content">
+        <button class="btn btn-primary btn-lg" onclick="toggleAddMedicineModal(true)">
+          <i class="ri-add-circle-fill"></i> Add New Medicine
+        </button>
+        <button class="btn btn-secondary" onclick="window.print()">
+          <i class="ri-printer-line"></i> Print Rate List
+        </button>
+      </div>
+    </div>
+
+    <!-- Overview Stats Bar -->
+    <div class="overview-stats-bar">
+      <div class="stat-pill">
+        <span class="stat-pill-label"><i class="ri-capsule-line"></i> Total Medicines:</span>
+        <span class="stat-pill-num"><%= stats.total_medicines %></span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-pill-label"><i class="ri-money-rupee-circle-line"></i> Avg Base Rate:</span>
+        <span class="stat-pill-num">₹<%= Number(stats.avg_base_rate || 0).toFixed(2) %></span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-pill-label"><i class="ri-wallet-3-line"></i> Avg Net Rate:</span>
+        <span class="stat-pill-num text-neethi">₹<%= Number(stats.avg_final_rate || 0).toFixed(2) %></span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-pill-label"><i class="ri-percent-line"></i> Standard GST:</span>
+        <span class="stat-pill-num text-supplyco"><%= Number(stats.avg_gst || 12).toFixed(1) %>%</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-pill-label"><i class="ri-file-pdf-2-line"></i> Attached PDFs:</span>
+        <span class="stat-pill-num text-other"><%= stats.pdf_count %></span>
+      </div>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div class="card filter-card" style="margin-bottom: 24px;">
+      <form action="/admin/medicines" method="GET" class="filter-form">
+        
+        <div class="filter-group flex-2">
+          <label class="filter-label"><i class="ri-search-line"></i> Search Particulars / HSN / Company / Batch</label>
+          <div class="input-icon-wrapper">
+            <input 
+              type="text" 
+              name="search" 
+              class="form-control" 
+              placeholder="e.g. ELSARTAN, Paracetamol, 30049069, ROMSONS, AMR26001..." 
+              value="<%= filters.search %>"
+            >
+            <span class="input-icon"><i class="ri-search-2-line"></i></span>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label"><i class="ri-filter-3-line"></i> Category</label>
+          <select name="category" class="form-control">
+            <option value="All" <%= filters.category === 'All' ? 'selected' : '' %>>All Categories</option>
+            <option value="Analgesics & Antipyretic" <%= filters.category === 'Analgesics & Antipyretic' ? 'selected' : '' %>>Analgesics &amp; Antipyretic</option>
+            <option value="Anti-Diabetic" <%= filters.category === 'Anti-Diabetic' ? 'selected' : '' %>>Anti-Diabetic</option>
+            <option value="Cardiovascular" <%= filters.category === 'Cardiovascular' ? 'selected' : '' %>>Cardiovascular</option>
+            <option value="Antibiotics" <%= filters.category === 'Antibiotics' ? 'selected' : '' %>>Antibiotics</option>
+            <option value="Gastrointestinal" <%= filters.category === 'Gastrointestinal' ? 'selected' : '' %>>Gastrointestinal</option>
+            <option value="Injectables" <%= filters.category === 'Injectables' ? 'selected' : '' %>>Injectables</option>
+            <option value="Medical Devices & Surgicals" <%= filters.category === 'Medical Devices & Surgicals' ? 'selected' : '' %>>Medical Devices &amp; Surgicals</option>
+            <option value="Diagnostic Equipment" <%= filters.category === 'Diagnostic Equipment' ? 'selected' : '' %>>Diagnostic Equipment</option>
+            <option value="Nutraceuticals & Vitamins" <%= filters.category === 'Nutraceuticals & Vitamins' ? 'selected' : '' %>>Nutraceuticals &amp; Vitamins</option>
+            <option value="Ointments & Creams" <%= filters.category === 'Ointments & Creams' ? 'selected' : '' %>>Ointments &amp; Creams</option>
+            <option value="Ayurvedic & Traditional" <%= filters.category === 'Ayurvedic & Traditional' ? 'selected' : '' %>>Ayurvedic &amp; Traditional</option>
+            <option value="General" <%= filters.category === 'General' ? 'selected' : '' %>>General</option>
+          </select>
+        </div>
+
+        <div class="filter-actions">
+          <button type="submit" class="btn btn-primary"><i class="ri-filter-fill"></i> Apply Filter</button>
+          <a href="/admin/medicines" class="btn btn-secondary"><i class="ri-refresh-line"></i> Reset</a>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Medicine Rate Master Table Card -->
+    <div class="card table-container-card">
+      <div class="card-header-flex">
+        <div class="card-header-titles">
+          <h3><i class="ri-medicine-bottle-line"></i> Master Medicine Catalog &amp; Rate Schedule (<%= medicines.length %> items)</h3>
+          <p>Columns: HSN Code, Particulars (Medicine Name), Packing, Company, Batch No, Expiry, MFG, M.R.P., Qty, Free, Rate, GST%, Tax%, and Net Rate</p>
+        </div>
+        <div class="card-header-tools">
+          <button class="btn btn-sm btn-outline-primary" onclick="toggleAddMedicineModal(true)">
+            <i class="ri-add-line"></i> Add New Medicine
+          </button>
+        </div>
+      </div>
+
+      <% if (medicines.length === 0) { %>
+        <div class="empty-state-box">
+          <div class="empty-icon"><i class="ri-capsule-line"></i></div>
+          <h4>No Medicine Rates Found</h4>
+          <p>No medicines match your search criteria. Add a medicine or reset filters.</p>
+          <button class="btn btn-primary" onclick="toggleAddMedicineModal(true)">
+            <i class="ri-add-circle-line"></i> Add Medicine Now
+          </button>
+        </div>
+      <% } else { %>
+        <div class="table-responsive">
+          <table class="data-table medicine-full-table">
+            <thead>
+              <tr>
+                <th>HSN / SN Code</th>
+                <th>Particulars (Medicine Name)</th>
+                <th>Packing</th>
+                <th>Company</th>
+                <th>Batch No</th>
+                <th>Expiry</th>
+                <th>MFG</th>
+                <th>M.R.P. (₹)</th>
+                <th>Qty.</th>
+                <th>Free</th>
+                <th>Rate (₹)</th>
+                <th>GST %</th>
+                <th>Tax %</th>
+                <th class="th-highlight">Net Rate (₹)</th>
+                <th>PDF Sheet</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% medicines.forEach((med, idx) => { %>
+                <tr>
+                  <td>
+                    <code class="code-hsn"><%= med.hsn_code || '---' %></code>
+                  </td>
+                  <td>
+                    <div class="med-name-cell">
+                      <strong><%= med.medicine_name %></strong>
+                      <% if (med.generic_name) { %>
+                        <span class="med-generic-sub"><i class="ri-flask-line"></i> <%= med.generic_name %></span>
+                      <% } %>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge-pack"><%= med.packing || med.unit_pack || '10x10' %></span>
+                  </td>
+                  <td>
+                    <span class="company-text"><%= med.company || med.manufacturer || 'MEDICITY' %></span>
+                  </td>
+                  <td>
+                    <code class="code-batch"><%= med.batch_no || '---' %></code>
+                  </td>
+                  <td>
+                    <span class="badge-expiry"><%= med.expiry_date || '---' %></span>
+                  </td>
+                  <td>
+                    <span class="badge-mfg"><%= med.mfg_date || '---' %></span>
+                  </td>
+                  <td class="mrp-cell">
+                    <strong>₹<%= Number(med.mrp || 0).toFixed(2) %></strong>
+                  </td>
+                  <td class="qty-cell">
+                    <span><%= med.quantity || 1 %></span>
+                  </td>
+                  <td class="free-cell">
+                    <span><%= med.free_qty || 0 %></span>
+                  </td>
+                  <td class="rate-base">
+                    <strong>₹<%= Number(med.base_rate).toFixed(2) %></strong>
+                  </td>
+                  <td>
+                    <span class="badge-gst"><%= med.gst_percent %>%</span>
+                  </td>
+                  <td>
+                    <span class="badge-tax"><%= med.tax_percent %>%</span>
+                  </td>
+                  <td class="rate-final">
+                    <div class="final-rate-pill">
+                      <strong>₹<%= Number(med.final_rate).toFixed(2) %></strong>
+                    </div>
+                  </td>
+                  <td>
+                    <% if (med.pdf_attachment_path) { %>
+                      <a href="<%= med.pdf_attachment_path %>" target="_blank" class="pdf-download-btn" title="View attached PDF rate sheet">
+                        <i class="ri-file-pdf-2-fill"></i>
+                        <span>PDF</span>
+                      </a>
+                    <% } else { %>
+                      <span class="text-muted" style="font-size: 0.78rem;">None</span>
+                    <% } %>
+                  </td>
+                  <td class="text-right actions-cell">
+                    <div class="action-btn-group">
+                      <!-- Edit Rate & Details Button -->
+                      <a href="/admin/medicines/<%= med.id %>/edit" class="btn-action btn-action-edit" title="Edit Full Medicine Details & Rates">
+                        <i class="ri-edit-2-line"></i> Edit
+                      </a>
+
+                      <!-- Delete Button -->
+                      <form action="/admin/medicines/<%= med.id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete <%= med.medicine_name %> from the Rate Master?');">
+                        <button type="submit" class="btn-action btn-action-delete" title="Delete Medicine">
+                          <i class="ri-delete-bin-line"></i>
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+
+  </main>
+
+  <!-- ADD MEDICINE MODAL -->
+  <div class="modal-overlay" id="addMedicineModal" style="display: none;">
+    <div class="modal-card modal-lg" style="max-width: 950px;">
+      <div class="modal-header">
+        <div class="modal-title-box">
+          <div class="modal-icon-badge"><i class="ri-medicine-bottle-fill"></i></div>
+          <div>
+            <h3>Add New Medicine (Full Details)</h3>
+            <p>HSN Code, Particulars, Company, Batch No, Expiry, MFG, MRP, Qty, Rate &amp; Net Rate</p>
+          </div>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="toggleAddMedicineModal(false)">&times;</button>
+      </div>
+
+      <form action="/admin/medicines" method="POST" enctype="multipart/form-data" class="modal-form" id="addMedForm">
+        <div class="modal-body">
+
+          <div class="form-grid-3">
+            <!-- HSN Code -->
+            <div class="form-group">
+              <label class="form-label" for="hsn_code"><i class="ri-barcode-box-line"></i> HSN / SN Code</label>
+              <input type="text" id="hsn_code" name="hsn_code" class="form-control" placeholder="e.g. 30049069" value="30049069">
+            </div>
+
+            <!-- Particulars (Medicine Name) -->
+            <div class="form-group flex-2">
+              <label class="form-label" for="med_name"><i class="ri-capsule-fill"></i> Particulars (Medicine Name) *</label>
+              <input type="text" id="med_name" name="medicine_name" class="form-control" placeholder="e.g. ELSARTAN-H TAB" required>
+            </div>
+
+            <!-- Generic Composition -->
+            <div class="form-group flex-2">
+              <label class="form-label" for="generic_name"><i class="ri-flask-line"></i> Generic Salt Composition</label>
+              <input type="text" id="generic_name" name="generic_name" class="form-control" placeholder="e.g. Telmisartan + HCTZ">
+            </div>
+
+            <!-- Category -->
+            <div class="form-group">
+              <label class="form-label" for="med_category"><i class="ri-folder-2-line"></i> Category</label>
+              <select id="med_category" name="category" class="form-control">
+                <option value="Analgesics & Antipyretic">Analgesics &amp; Antipyretic</option>
+                <option value="Anti-Diabetic">Anti-Diabetic</option>
+                <option value="Cardiovascular">Cardiovascular</option>
+                <option value="Antibiotics">Antibiotics</option>
+                <option value="Gastrointestinal">Gastrointestinal</option>
+                <option value="Injectables">Injectables</option>
+                <option value="Medical Devices & Surgicals">Medical Devices &amp; Surgicals</option>
+                <option value="Diagnostic Equipment">Diagnostic Equipment</option>
+                <option value="Nutraceuticals & Vitamins">Nutraceuticals &amp; Vitamins</option>
+                <option value="Ointments & Creams">Ointments &amp; Creams</option>
+                <option value="Ayurvedic & Traditional">Ayurvedic &amp; Traditional</option>
+                <option value="General" selected>General Formulations</option>
+              </select>
+            </div>
+
+            <!-- Packing -->
+            <div class="form-group">
+              <label class="form-label" for="packing"><i class="ri-box-3-line"></i> Packing</label>
+              <input type="text" id="packing" name="packing" class="form-control" placeholder="e.g. 10x10 Strips" value="10x10 Strips">
+            </div>
+
+            <!-- Company Name -->
+            <div class="form-group">
+              <label class="form-label" for="company"><i class="ri-building-line"></i> Company Name</label>
+              <input type="text" id="company" name="company" class="form-control" placeholder="e.g. ANCHOR / MEDISUM" value="MEDICITY">
+            </div>
+
+            <!-- Batch No -->
+            <div class="form-group">
+              <label class="form-label" for="batch_no"><i class="ri-hashtag"></i> Batch No</label>
+              <input type="text" id="batch_no" name="batch_no" class="form-control" placeholder="e.g. AMR26001" value="MCT-2026-01">
+            </div>
+
+            <!-- Expiry Date -->
+            <div class="form-group">
+              <label class="form-label" for="expiry_date"><i class="ri-calendar-event-line"></i> Expiry Date</label>
+              <input type="text" id="expiry_date" name="expiry_date" class="form-control" placeholder="DD/MM/YYYY e.g. 01/05/2028" value="01/05/2028">
+            </div>
+
+            <!-- MFG Date -->
+            <div class="form-group">
+              <label class="form-label" for="mfg_date"><i class="ri-calendar-check-line"></i> MFG Date</label>
+              <input type="text" id="mfg_date" name="mfg_date" class="form-control" placeholder="DD/MM/YYYY e.g. 01/05/2025" value="01/05/2025">
+            </div>
+
+            <!-- M.R.P. -->
+            <div class="form-group">
+              <label class="form-label" for="mrp"><i class="ri-price-tag-3-line"></i> M.R.P. (₹)</label>
+              <input type="number" step="0.01" id="mrp" name="mrp" class="form-control" placeholder="0.00" value="0.00">
+            </div>
+
+            <!-- Quantity -->
+            <div class="form-group">
+              <label class="form-label" for="quantity"><i class="ri-numbers-line"></i> Quantity (Qty.)</label>
+              <input type="number" step="1" id="quantity" name="quantity" class="form-control" placeholder="1" value="1">
+            </div>
+
+            <!-- Free Qty -->
+            <div class="form-group">
+              <label class="form-label" for="free_qty"><i class="ri-gift-line"></i> Free Qty.</label>
+              <input type="number" step="1" id="free_qty" name="free_qty" class="form-control" placeholder="0" value="0">
+            </div>
+          </div>
+
+          <!-- RATE & TAX CALCULATION SECTION -->
+          <div class="rate-calc-box">
+            <div class="calc-header">
+              <div class="calc-header-title"><i class="ri-calculator-line"></i> Live Rate, GST &amp; Net Rate Calculator</div>
+              <div class="calc-subtitle">Net Rate is automatically computed in real-time</div>
+            </div>
+
+            <div class="calc-inputs-grid">
+              <div class="form-group">
+                <label class="form-label" for="base_rate"><i class="ri-money-rupee-circle-line"></i> Rate / Base Price (₹) *</label>
+                <input type="number" step="0.01" id="base_rate" name="base_rate" class="form-control" placeholder="0.00" required oninput="calculateLiveRate()">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="gst_percent"><i class="ri-percent-line"></i> GST %</label>
+                <input type="number" step="0.1" id="gst_percent" name="gst_percent" class="form-control" value="12.0" oninput="calculateLiveRate()">
+                <div class="quick-gst-pills">
+                  <span onclick="setGST(0)">0%</span>
+                  <span onclick="setGST(5)">5%</span>
+                  <span onclick="setGST(12)" class="active">12%</span>
+                  <span onclick="setGST(18)">18%</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="tax_percent"><i class="ri-add-circle-line"></i> Tax / Cess %</label>
+                <input type="number" step="0.1" id="tax_percent" name="tax_percent" class="form-control" value="0.0" oninput="calculateLiveRate()">
+              </div>
+            </div>
+
+            <!-- Live Calculation Display Card -->
+            <div class="calc-result-display">
+              <div class="calc-breakdown">
+                <div>Rate: <strong id="dispBase">₹0.00</strong></div>
+                <div>+ GST (<span id="dispGSTP">12</span>%): <strong id="dispGSTAmt">₹0.00</strong></div>
+                <div>+ Tax (<span id="dispTaxP">0</span>%): <strong id="dispTaxAmt">₹0.00</strong></div>
+              </div>
+              <div class="calc-total-badge">
+                <span>Calculated Net Rate:</span>
+                <strong id="dispFinalRate">₹0.00</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- PDF ATTACHMENT SECTION -->
+          <div class="form-group pdf-upload-field" style="margin-top: 15px;">
+            <label class="form-label" for="pdf_attachment">
+              <i class="ri-file-pdf-2-fill"></i> Attach Official Rate Sheet / PDF Document (Optional)
+            </label>
+            <div class="file-drop-zone">
+              <input type="file" id="pdf_attachment" name="pdf_attachment" accept=".pdf,application/pdf" class="file-input">
+              <div class="drop-zone-content">
+                <i class="ri-upload-cloud-2-line"></i>
+                <span>Choose a PDF file or drag &amp; drop here (Rate quotation, Price List, Product Specs)</span>
+                <small>Format: .PDF &bull; Max 35MB</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Remarks -->
+          <div class="form-group" style="margin-top: 15px;">
+            <label class="form-label" for="remarks"><i class="ri-sticky-note-line"></i> Remarks / Batch Notes</label>
+            <textarea id="remarks" name="remarks" class="form-control" rows="2" placeholder="e.g. Neethi & Supplyco Approved Quotation Rate"></textarea>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="toggleAddMedicineModal(false)">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="ri-save-line"></i> Save to Rate Master</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function toggleAddMedicineModal(show) {
+      const modal = document.getElementById('addMedicineModal');
+      modal.style.display = show ? 'flex' : 'none';
+      if (show) {
+        calculateLiveRate();
+      }
+    }
+
+    function setGST(val) {
+      document.getElementById('gst_percent').value = val;
+      calculateLiveRate();
+    }
+
+    function calculateLiveRate() {
+      const base = parseFloat(document.getElementById('base_rate').value) || 0;
+      const gst = parseFloat(document.getElementById('gst_percent').value) || 0;
+      const tax = parseFloat(document.getElementById('tax_percent').value) || 0;
+
+      const gstAmt = (base * gst) / 100;
+      const taxAmt = (base * tax) / 100;
+      const finalVal = base + gstAmt + taxAmt;
+
+      document.getElementById('dispBase').innerText = '₹' + base.toFixed(2);
+      document.getElementById('dispGSTP').innerText = gst;
+      document.getElementById('dispGSTAmt').innerText = '₹' + gstAmt.toFixed(2);
+      document.getElementById('dispTaxP').innerText = tax;
+      document.getElementById('dispTaxAmt').innerText = '₹' + taxAmt.toFixed(2);
+      document.getElementById('dispFinalRate').innerText = '₹' + finalVal.toFixed(2);
+    }
+  </script>
+
+</body>
+
+</html>

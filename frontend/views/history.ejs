@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signed Delivery Slips History | MEDICITY PHARMACEUTICAL HARIPAD</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- Top Wholesale Shop Header -->
+  <header class="app-header wholesale-grand-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <div class="brand-logo-icon">
+          <i class="ri-history-line"></i>
+        </div>
+        <div class="brand-title">
+          <div class="wholesale-distributor-badge">
+            <i class="ri-award-fill"></i> WHOLESALE PHARMACEUTICAL DISTRIBUTOR
+          </div>
+          <h1 class="main-shop-heading" style="font-size: 1.6rem;">MEDICITY PHARMACEUTICAL HARIPAD</h1>
+          <div class="brand-subtitle">
+            <span class="location-badge"><i class="ri-map-pin-2-fill"></i> Haripad, Alappuzha, Kerala</span>
+            <span>Delivery Proof History &amp; Slip Archive</span>
+          </div>
+        </div>
+      </div>
+      <div class="header-user-controls">
+        <div class="header-nav-links">
+          <a href="/" class="nav-btn"><i class="ri-dashboard-line"></i> Dashboard</a>
+          <% if (currentUser && currentUser.role === 'admin') { %>
+            <a href="/admin/medicines" class="nav-btn"><i class="ri-medicine-bottle-line"></i> Medicine Rates</a>
+          <% } %>
+          <a href="/history" class="nav-btn active"><i class="ri-archive-line"></i> Delivery Slips</a>
+        </div>
+
+        <div class="user-profile-pill <%= currentUser && currentUser.role === 'admin' ? 'admin-pill' : '' %>">
+          <span class="user-avatar-circle <%= currentUser && currentUser.role === 'admin' ? 'admin-avatar' : '' %>">
+            <i class="<%= currentUser && currentUser.role === 'admin' ? 'ri-shield-star-fill' : 'ri-user-star-line' %>"></i>
+          </span>
+          <div class="user-info-text">
+            <span class="user-role"><%= currentUser && currentUser.role === 'admin' ? 'Administrator' : 'Delivery Worker' %></span>
+            <span class="user-name"><%= currentUser ? currentUser.username : 'Worker' %></span>
+          </div>
+        </div>
+
+        <a href="/logout" class="btn btn-sm btn-logout" title="Sign Out">
+          <i class="ri-logout-box-r-line"></i> Sign Out
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Wrapper -->
+  <main class="main-wrapper" style="margin-top: -20px;">
+
+    <!-- Breadcrumbs -->
+    <nav class="breadcrumb-nav">
+      <a href="/"><i class="ri-dashboard-line"></i> Dashboard</a>
+      <span class="breadcrumb-sep"><i class="ri-arrow-right-s-line"></i></span>
+      <span class="breadcrumb-current"><i class="ri-time-line"></i> Delivery Slips History (Date-Wise)</span>
+    </nav>
+
+    <!-- Alert Notifications -->
+    <% if (message) { %>
+      <div class="alert alert-success">
+        <div><i class="ri-checkbox-circle-fill"></i> <%= message %></div>
+        <button onclick="this.parentElement.remove()" class="alert-close-btn"><i class="ri-close-line"></i></button>
+      </div>
+    <% } %>
+
+    <% if (error) { %>
+      <div class="alert alert-error">
+        <div><i class="ri-error-warning-fill"></i> <%= error %></div>
+        <button onclick="this.parentElement.remove()" class="alert-close-btn"><i class="ri-close-line"></i></button>
+      </div>
+    <% } %>
+
+    <!-- History Page Header & Actions -->
+    <div class="records-header-row">
+      <div>
+        <div class="section-eyebrow"><i class="ri-folder-history-line"></i> ARCHIVED SLIPS</div>
+        <h2 class="records-title">Previous Signed Delivery Slips (Date-Wise)</h2>
+        <p class="records-desc">All verified delivery proof slips organized chronologically by delivery date</p>
+      </div>
+
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <div class="records-summary-badge">
+          <i class="ri-file-list-3-line"></i> Total Slips: <strong><%= deliveries.length %></strong>
+        </div>
+        <button onclick="window.print()" class="btn btn-secondary btn-sm">
+          <i class="ri-printer-line"></i> Print Slips Log
+        </button>
+        <a href="/" class="btn btn-primary btn-sm">
+          <i class="ri-add-line"></i> New Delivery Slip
+        </a>
+      </div>
+    </div>
+
+    <!-- Filter and Search Toolbar -->
+    <div class="card filter-card-container">
+      <form action="/history" method="GET" class="filter-records-form">
+        
+        <div class="filter-field">
+          <label class="filter-label"><i class="ri-search-line"></i> Search Hospital / Order #</label>
+          <input 
+            type="text" 
+            name="hospital_name" 
+            class="form-control filter-input" 
+            placeholder="e.g. Taluk Hospital or Order #..."
+            value="<%= filters.hospital_name %>"
+          >
+        </div>
+
+        <div class="filter-field">
+          <label class="filter-label"><i class="ri-filter-3-line"></i> Channel</label>
+          <select name="service_type" class="form-control filter-input">
+            <option value="All" <%= filters.service_type === 'All' ? 'selected' : '' %>>All Channels</option>
+            <option value="Neethi Store" <%= filters.service_type === 'Neethi Store' ? 'selected' : '' %>>Neethi Stores</option>
+            <option value="Supplyco" <%= filters.service_type === 'Supplyco' ? 'selected' : '' %>>Supplyco Outlets</option>
+            <option value="Direct Govt Order" <%= filters.service_type === 'Direct Govt Order' ? 'selected' : '' %>>Direct Govt / Hospitals</option>
+          </select>
+        </div>
+
+        <div class="filter-field">
+          <label class="filter-label"><i class="ri-calendar-line"></i> Filter by Date</label>
+          <input 
+            type="date" 
+            name="delivery_date" 
+            class="form-control filter-input" 
+            value="<%= filters.delivery_date %>"
+          >
+        </div>
+
+        <div class="filter-buttons">
+          <button type="submit" class="btn btn-primary btn-sm"><i class="ri-search-2-line"></i> Search</button>
+          <a href="/history" class="btn btn-secondary btn-sm"><i class="ri-refresh-line"></i> Clear</a>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Data Table Card -->
+    <div class="card table-container-card" style="margin-top: 20px;">
+      
+      <% if (deliveries.length === 0) { %>
+        <div class="empty-state-box">
+          <div class="empty-icon"><i class="ri-folder-open-line"></i></div>
+          <h4>No Delivery Records Found</h4>
+          <p>No delivery slips matched your selected filters or search keyword.</p>
+          <a href="/history" class="btn btn-secondary btn-sm">Clear Filter Filters</a>
+        </div>
+      <% } else { %>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th># ID</th>
+                <th>Delivery Date</th>
+                <th>Service Channel</th>
+                <th>Hospital / Medical Store Name</th>
+                <th>Invoice / Challan #</th>
+                <th>Signed Proof Slip</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% deliveries.forEach(d => { %>
+                <tr>
+                  <td class="td-id">#<%= d.id %></td>
+                  <td>
+                    <div class="date-cell">
+                      <i class="ri-calendar-line"></i>
+                      <span><%= d.delivery_date %></span>
+                    </div>
+                  </td>
+                  <td>
+                    <% if (d.service_type.includes('Neethi')) { %>
+                      <span class="badge badge-neethi"><i class="ri-store-2-line"></i> <%= d.service_type %></span>
+                    <% } else if (d.service_type.includes('Supplyco')) { %>
+                      <span class="badge badge-supplyco"><i class="ri-shopping-cart-2-line"></i> <%= d.service_type %></span>
+                    <% } else { %>
+                      <span class="badge badge-other"><i class="ri-hospital-line"></i> <%= d.service_type %></span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <div class="hospital-name-text">
+                      <strong><%= d.hospital_name %></strong>
+                    </div>
+                  </td>
+                  <td>
+                    <code class="order-code"><%= d.order_number %></code>
+                  </td>
+                  <td>
+                    <a href="<%= d.signed_proof_path %>" target="_blank" class="slip-thumbnail-link">
+                      <img src="<%= d.signed_proof_path %>" alt="Slip #<%= d.id %>" class="slip-thumb" onerror="this.src='/uploads/sample_slip_neethi.svg'">
+                      <span class="view-slip-text"><i class="ri-zoom-in-line"></i> Inspect</span>
+                    </a>
+                  </td>
+                  <td class="text-right actions-cell">
+                    <div class="action-btn-group">
+                      <a href="/deliveries/<%= d.id %>" class="btn-action btn-action-view" title="Inspect Record & Slip">
+                        <i class="ri-eye-line"></i>
+                      </a>
+                      <a href="/deliveries/<%= d.id %>/edit" class="btn-action btn-action-edit" title="Edit Slip Details">
+                        <i class="ri-edit-line"></i>
+                      </a>
+                      <form action="/deliveries/<%= d.id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete slip record #<%= d.id %>?');">
+                        <button type="submit" class="btn-action btn-action-delete" title="Delete Slip Record">
+                          <i class="ri-delete-bin-line"></i>
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+
+    </div>
+
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-container">
+      <p>&copy; MEDICITY PHARMACEUTICAL HARIPAD &bull; Wholesale Institutional Medicine Supply Desk</p>
+    </div>
+  </footer>
+
+</body>
+</html>

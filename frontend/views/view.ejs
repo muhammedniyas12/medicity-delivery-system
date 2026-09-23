@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proof Inspection - MEDICITY PHARMACEUTICAL HARIPAD</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- Top App Header -->
+  <header class="app-header wholesale-grand-header no-print">
+    <div class="header-container">
+      <div class="brand-section">
+        <div class="brand-logo-icon">
+          <i class="ri-shield-check-line"></i>
+        </div>
+        <div class="brand-title">
+          <div class="wholesale-distributor-badge">
+            <i class="ri-award-fill"></i> WHOLESALE PHARMACEUTICAL DISTRIBUTOR
+          </div>
+          <h1 class="main-shop-heading" style="font-size: 1.5rem;">MEDICITY PHARMACEUTICAL HARIPAD</h1>
+          <div class="brand-subtitle">
+            <span class="location-badge">Haripad, Alappuzha, Kerala</span>
+            <span>Delivery Proof Inspection &amp; Verification Desk</span>
+          </div>
+        </div>
+      </div>
+      <div class="header-user-controls">
+        <div class="header-nav-links">
+          <a href="/" class="nav-btn"><i class="ri-dashboard-line"></i> Dashboard</a>
+          <% if (currentUser && currentUser.role === 'admin') { %>
+            <a href="/admin/medicines" class="nav-btn"><i class="ri-medicine-bottle-line"></i> Medicine Rates</a>
+          <% } %>
+          <a href="/history" class="nav-btn"><i class="ri-archive-line"></i> Delivery Slips</a>
+        </div>
+
+        <div class="user-profile-pill <%= currentUser && currentUser.role === 'admin' ? 'admin-pill' : '' %>">
+          <span class="user-avatar-circle <%= currentUser && currentUser.role === 'admin' ? 'admin-avatar' : '' %>">
+            <i class="<%= currentUser && currentUser.role === 'admin' ? 'ri-shield-star-fill' : 'ri-user-star-line' %>"></i>
+          </span>
+          <div class="user-info-text">
+            <span class="user-role"><%= currentUser && currentUser.role === 'admin' ? 'Administrator' : 'Delivery Worker' %></span>
+            <span class="user-name"><%= currentUser ? currentUser.username : 'Worker' %></span>
+          </div>
+        </div>
+
+        <a href="/logout" class="btn btn-sm btn-logout" title="Sign Out">
+          <i class="ri-logout-box-r-line"></i> Sign Out
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="view-container">
+
+    <!-- Breadcrumbs -->
+    <nav class="breadcrumb-nav no-print">
+      <a href="/"><i class="ri-dashboard-line"></i> Dashboard</a>
+      <span class="breadcrumb-sep"><i class="ri-arrow-right-s-line"></i></span>
+      <a href="/history"><i class="ri-history-line"></i> History</a>
+      <span class="breadcrumb-sep"><i class="ri-arrow-right-s-line"></i></span>
+      <span class="breadcrumb-current">Delivery Proof Slip Inspection</span>
+    </nav>
+
+    <!-- Alert Notifications -->
+    <% if (typeof message !== 'undefined' && message) { %>
+      <div class="alert alert-success no-print" style="margin-bottom: 20px;">
+        <div><i class="ri-checkbox-circle-fill"></i> <%= message %></div>
+        <button onclick="this.parentElement.remove()" class="alert-close-btn"><i class="ri-close-line"></i></button>
+      </div>
+    <% } %>
+
+    <% if (error || !delivery) { %>
+      <div class="card empty-state">
+        <div class="empty-icon"><i class="ri-error-warning-line"></i></div>
+        <h2>Record Not Found</h2>
+        <p><%= error || 'The requested delivery proof record could not be loaded.' %></p>
+        <br>
+        <a href="/" class="btn btn-primary"><i class="ri-home-4-line"></i> Return to Dashboard</a>
+      </div>
+    <% } else { %>
+
+      <div class="view-header no-print">
+        <div>
+          <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.6rem; font-weight: 700; color: var(--text-main);">
+            Signed Proof Slip #<%= delivery.id %>
+          </h2>
+          <p style="color: var(--text-muted); font-size: 0.92rem;">
+            Order Ref: <strong style="color: var(--text-main);"><%= delivery.order_number %></strong> &bull; Delivered on <%= delivery.delivery_date %> &bull; Logged on <%= delivery.created_at %>
+          </p>
+        </div>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <a href="/deliveries/<%= delivery.id %>/edit" class="btn" style="background: #d97706; border-color: #d97706; color: #fff;">
+            <i class="ri-edit-line"></i> Edit / Replace Slip
+          </a>
+          <button onclick="window.print()" class="btn btn-secondary">
+            <i class="ri-printer-line"></i> Print Slip
+          </button>
+          <a href="<%= delivery.signed_proof_path %>" download="MEDICITY-PROOF-<%= delivery.order_number %>" class="btn btn-primary">
+            <i class="ri-download-line"></i> Download Photo
+          </a>
+          <a href="/history" class="btn btn-secondary">
+            <i class="ri-history-line"></i> History
+          </a>
+        </div>
+      </div>
+
+      <!-- Main Inspection Grid -->
+      <div class="view-grid">
+
+        <!-- Left: Full Size Image Viewer -->
+        <div class="proof-image-card">
+          <div class="proof-image-header">
+            <span class="proof-image-title"><i class="ri-camera-lens-fill"></i> Uploaded Physical Signed Paper Slip</span>
+            <div class="proof-actions">
+              <a href="<%= delivery.signed_proof_path %>" target="_blank" class="btn btn-sm btn-secondary" title="Open Full Size">
+                <i class="ri-fullscreen-line"></i> Full Screen
+              </a>
+            </div>
+          </div>
+          <div class="proof-image-body">
+            <img src="<%= delivery.signed_proof_path %>" alt="Signed Delivery Proof <%= delivery.order_number %>" class="proof-full-image" onerror="this.src='/uploads/sample_slip_neethi.svg'">
+          </div>
+          <div class="proof-image-footer">
+            <small><i class="ri-lock-fill"></i> Digitally archived physical slip record for MEDICITY PHARMACEUTICAL HARIPAD</small>
+          </div>
+        </div>
+
+        <!-- Right: Record Metadata & Audit Details -->
+        <div class="proof-details-card">
+          <h3 class="details-section-title"><i class="ri-file-list-2-line"></i> Delivery Metadata</h3>
+
+          <div class="details-meta-list">
+            <div class="detail-item">
+              <span class="detail-label"><i class="ri-hashtag"></i> Slip Record ID</span>
+              <span class="detail-value">#<%= delivery.id %></span>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label"><i class="ri-calendar-event-line"></i> Delivery Date</span>
+              <span class="detail-value"><strong><%= delivery.delivery_date %></strong></span>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label"><i class="ri-store-3-line"></i> Service Channel</span>
+              <span class="detail-value">
+                <% if (delivery.service_type.includes('Neethi')) { %>
+                  <span class="badge badge-neethi"><i class="ri-store-2-line"></i> <%= delivery.service_type %></span>
+                <% } else if (delivery.service_type.includes('Supplyco')) { %>
+                  <span class="badge badge-supplyco"><i class="ri-shopping-cart-2-line"></i> <%= delivery.service_type %></span>
+                <% } else { %>
+                  <span class="badge badge-other"><i class="ri-hospital-line"></i> <%= delivery.service_type %></span>
+                <% } %>
+              </span>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label"><i class="ri-building-line"></i> Receiving Hospital / Store</span>
+              <span class="detail-value" style="font-size: 1.05rem; font-weight: 700; color: var(--primary);">
+                <%= delivery.hospital_name %>
+              </span>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label"><i class="ri-file-text-line"></i> Invoice / Challan Number</span>
+              <span class="detail-value">
+                <code class="order-code" style="font-size: 1rem;"><%= delivery.order_number %></code>
+              </span>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label"><i class="ri-time-line"></i> Timestamp Created</span>
+              <span class="detail-value" style="font-size: 0.85rem; color: var(--text-muted);">
+                <%= delivery.created_at %>
+              </span>
+            </div>
+          </div>
+
+          <!-- Quick Actions Box -->
+          <div class="audit-badge-box">
+            <div class="audit-icon"><i class="ri-shield-check-fill"></i></div>
+            <div>
+              <strong>Verified Physical Stamped Copy</strong>
+              <p>Proof confirmed for billing and audit verification.</p>
+            </div>
+          </div>
+
+          <div style="margin-top: 24px; display: flex; flex-direction: column; gap: 10px;">
+            <a href="/deliveries/<%= delivery.id %>/edit" class="btn btn-secondary btn-block">
+              <i class="ri-edit-2-line"></i> Modify Details or Replace Image
+            </a>
+            <form action="/deliveries/<%= delivery.id %>/delete" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete delivery slip #<%= delivery.id %>?');">
+              <button type="submit" class="btn btn-block" style="background: transparent; border: 1px solid #ef4444; color: #dc2626;">
+                <i class="ri-delete-bin-line"></i> Delete Slip Record
+              </button>
+            </form>
+          </div>
+
+        </div>
+
+      </div>
+
+    <% } %>
+
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEDICITY PHARMACEUTICAL HARIPAD - Management Portal</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <!-- Remixicon for Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+</head>
+
+<body>
+
+  <!-- Top Wholesale Shop Grand Header -->
+  <header class="app-header wholesale-grand-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <div class="brand-logo-icon">
+          <i class="ri-hospital-line"></i>
+        </div>
+        <div class="brand-title">
+          <div class="wholesale-distributor-badge">
+            <i class="ri-award-fill"></i> WHOLESALE PHARMACEUTICAL DISTRIBUTOR
+          </div>
+          <h1 class="main-shop-heading">MEDICITY PHARMACEUTICAL HARIPAD</h1>
+          <div class="brand-subtitle">
+            <span class="location-badge"><i class="ri-map-pin-2-fill"></i> Haripad, Alappuzha, Kerala</span>
+            <span>Government Hospitals &amp; Co-operative Institutional Supply Hub</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Profile & Navigation Controls -->
+      <div class="header-user-controls">
+        <div class="header-nav-links">
+          <a href="/" class="nav-btn active"><i class="ri-dashboard-line"></i> Dashboard</a>
+          <% if (currentUser && currentUser.role === 'admin') { %>
+            <a href="/admin/medicines" class="nav-btn"><i class="ri-medicine-bottle-line"></i> Medicine Rates</a>
+          <% } %>
+          <a href="/history" class="nav-btn"><i class="ri-archive-line"></i> Delivery Slips</a>
+        </div>
+
+        <div class="user-profile-pill <%= currentUser && currentUser.role === 'admin' ? 'admin-pill' : '' %>">
+          <span class="user-avatar-circle <%= currentUser && currentUser.role === 'admin' ? 'admin-avatar' : '' %>">
+            <i class="<%= currentUser && currentUser.role === 'admin' ? 'ri-shield-star-fill' : 'ri-user-star-line' %>"></i>
+          </span>
+          <div class="user-info-text">
+            <span class="user-role"><%= currentUser && currentUser.role === 'admin' ? 'Administrator' : 'Delivery Worker' %></span>
+            <span class="user-name"><%= currentUser ? currentUser.username : 'medicity' %></span>
+          </div>
+        </div>
+
+        <a href="/logout" class="btn btn-sm btn-logout" title="Log out from system">
+          <i class="ri-logout-box-r-line"></i> Sign Out
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Wrapper -->
+  <main class="main-wrapper">
+
+    <!-- Alert Notifications -->
+    <% if (message) { %>
+      <div class="alert alert-success">
+        <div><i class="ri-checkbox-circle-fill"></i>
+          <%= message %>
+        </div>
+        <button onclick="this.parentElement.remove()" class="alert-close-btn"><i class="ri-close-line"></i></button>
+      </div>
+    <% } %>
+
+    <% if (error) { %>
+      <div class="alert alert-error">
+        <div><i class="ri-error-warning-fill"></i>
+          <%= error %>
+        </div>
+        <button onclick="this.parentElement.remove()" class="alert-close-btn"><i class="ri-close-line"></i></button>
+      </div>
+    <% } %>
+
+    <!-- ADMIN EXCLUSIVE FEATURE HERO (Shown for Admin Role) -->
+    <% if (currentUser && currentUser.role === 'admin') { %>
+      <div class="admin-feature-banner">
+        <div class="admin-banner-left">
+          <div class="admin-badge-glow">
+            <i class="ri-admin-fill"></i> ADMIN MASTER CONTROL
+          </div>
+          <h2>Medicine Rates, Tax &amp; PDF Catalog Master</h2>
+          <p>You have full authority to add medicine names, modify base rates, adjust GST &amp; Tax %, and attach or update official PDF documents whenever you want.</p>
+          <div class="admin-banner-stats">
+            <div class="admin-mini-stat">
+              <span class="mini-stat-val"><%= medStats.total_medicines %></span>
+              <span class="mini-stat-lbl">Catalog Medicines</span>
+            </div>
+            <div class="admin-mini-stat">
+              <span class="mini-stat-val"><%= medStats.pdf_count %></span>
+              <span class="mini-stat-lbl">PDF Attachments</span>
+            </div>
+            <div class="admin-mini-stat">
+              <span class="mini-stat-val"><%= metrics.total %></span>
+              <span class="mini-stat-lbl">Delivery Slips</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-banner-right">
+          <a href="/admin/medicines" class="btn btn-primary btn-lg banner-action-btn">
+            <i class="ri-medicine-bottle-fill"></i> Open Medicine Rate Master
+          </a>
+          <a href="/history" class="btn btn-secondary banner-action-btn">
+            <i class="ri-file-list-3-line"></i> Manage Delivery Slips
+          </a>
+        </div>
+      </div>
+    <% } %>
+
+    <!-- Quick Overview Stats Banner -->
+    <div class="overview-stats-bar">
+      <div class="stat-pill">
+        <span class="stat-pill-label"><i class="ri-file-shield-line"></i> Total Slips:</span>
+        <span class="stat-pill-num">
+          <%= metrics.total %>
+        </span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-pill-label"><i class="ri-calendar-check-line"></i> Today:</span>
+        <span class="stat-pill-num">
+          <%= metrics.today %>
+        </span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-pill-label"><i class="ri-store-2-line"></i> Neethi:</span>
+        <span class="stat-pill-num text-neethi">
+          <%= metrics.neethi %>
+        </span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-pill-label"><i class="ri-shopping-cart-2-line"></i> Supplyco:</span>
+        <span class="stat-pill-num text-supplyco">
+          <%= metrics.supplyco %>
+        </span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-pill-label"><i class="ri-building-line"></i> Govt/Others:</span>
+        <span class="stat-pill-num text-other">
+          <%= metrics.other %>
+        </span>
+      </div>
+      <% if (currentUser && currentUser.role === 'admin') { %>
+        <div class="stat-pill">
+          <span class="stat-pill-label"><i class="ri-capsule-fill"></i> Medicines:</span>
+          <span class="stat-pill-num text-primary">
+            <%= medStats.total_medicines %>
+          </span>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- 4 Core Service Sections (Neethi, Supplyco, Others, History) -->
+    <section class="section-channels-wrapper">
+      <div class="section-heading-box">
+        <div class="section-eyebrow"><i class="ri-apps-2-line"></i> DELIVERY PROOF SLIP PORTAL</div>
+        <h2 class="section-main-title">Select Channel to Upload or View Slips</h2>
+        <p class="section-sub-desc">Choose Neethi, Supplyco, or Others to record delivery slip photos, or open History to inspect previous uploaded slips</p>
+      </div>
+
+      <div class="four-channels-grid">
+
+        <!-- OPTION 1: NEETHI -->
+        <div class="channel-card card-neethi">
+          <div class="channel-card-badge">
+            <span class="badge badge-neethi"><i class="ri-store-2-fill"></i> Option 1</span>
+          </div>
+          <div class="channel-icon-circle bg-neethi">
+            <i class="ri-store-2-fill"></i>
+          </div>
+          <h3 class="channel-title">NEETHI</h3>
+          <p class="channel-desc">Kerala State Co-operative Neethi &amp; Karunya Medical Fair Price Stores</p>
+          <div class="channel-meta">
+            <span><i class="ri-checkbox-circle-fill"></i> Signed Slip Photo</span>
+            <span><i class="ri-checkbox-circle-fill"></i> Outlet Invoice</span>
+          </div>
+          <a href="/upload/neethi" class="btn btn-channel btn-neethi">
+            <span>Add Neethi Slip</span>
+            <i class="ri-arrow-right-line"></i>
+          </a>
+        </div>
+
+        <!-- OPTION 2: SUPPLYCO -->
+        <div class="channel-card card-supplyco">
+          <div class="channel-card-badge">
+            <span class="badge badge-supplyco"><i class="ri-shopping-cart-2-fill"></i> Option 2</span>
+          </div>
+          <div class="channel-icon-circle bg-supplyco">
+            <i class="ri-shopping-cart-2-fill"></i>
+          </div>
+          <h3 class="channel-title">SUPPLYCO</h3>
+          <p class="channel-desc">Civil Supplies Corporation Medical Outlets &amp; Institutional Distribution</p>
+          <div class="channel-meta">
+            <span><i class="ri-checkbox-circle-fill"></i> Signed Slip Photo</span>
+            <span><i class="ri-checkbox-circle-fill"></i> Challan Number</span>
+          </div>
+          <a href="/upload/supplyco" class="btn btn-channel btn-supplyco">
+            <span>Add Supplyco Slip</span>
+            <i class="ri-arrow-right-line"></i>
+          </a>
+        </div>
+
+        <!-- OPTION 3: OTHERS / DIRECT GOVT HOSPITALS -->
+        <div class="channel-card card-others">
+          <div class="channel-card-badge">
+            <span class="badge badge-other"><i class="ri-hospital-fill"></i> Option 3</span>
+          </div>
+          <div class="channel-icon-circle bg-others">
+            <i class="ri-hospital-fill"></i>
+          </div>
+          <h3 class="channel-title">OTHERS</h3>
+          <p class="channel-desc">Govt Taluk HQ Hospitals, PHC, CHC, Medical College &amp; Institutional Direct</p>
+          <div class="channel-meta">
+            <span><i class="ri-checkbox-circle-fill"></i> Signed Slip Photo</span>
+            <span><i class="ri-checkbox-circle-fill"></i> Order Slip Reference</span>
+          </div>
+          <a href="/upload/others" class="btn btn-channel btn-others">
+            <span>Add Hospital Slip</span>
+            <i class="ri-arrow-right-line"></i>
+          </a>
+        </div>
+
+        <!-- OPTION 4: PREVIOUS SLIPS HISTORY ARCHIVE -->
+        <div class="channel-card card-history">
+          <div class="channel-card-badge">
+            <span class="badge badge-history"><i class="ri-archive-fill"></i> Option 4</span>
+          </div>
+          <div class="channel-icon-circle bg-history">
+            <i class="ri-archive-fill"></i>
+          </div>
+          <h3 class="channel-title">PREVIOUS SLIPS</h3>
+          <p class="channel-desc">Inspect, filter date-wise, search hospital names, print or download signed proofs</p>
+          <div class="channel-meta">
+            <span><i class="ri-checkbox-circle-fill"></i> Date Wise Archive</span>
+            <span><i class="ri-checkbox-circle-fill"></i> Quick Search</span>
+          </div>
+          <a href="/history" class="btn btn-channel btn-history">
+            <span>View All Records</span>
+            <i class="ri-arrow-right-line"></i>
+          </a>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Recent Delivery Proof Records Table Section -->
+    <section class="section-records-wrapper" style="margin-top: 36px;">
+      <div class="card table-container-card">
+        <div class="card-header-flex">
+          <div class="card-header-titles">
+            <h3><i class="ri-time-line"></i> Recent Signed Delivery Proof Records</h3>
+            <p>Recently uploaded paper delivery slips across Haripad region</p>
+          </div>
+          <div class="card-header-tools">
+            <a href="/history" class="btn btn-sm btn-outline-primary">
+              <i class="ri-external-link-line"></i> Open Full Archive
+            </a>
+          </div>
+        </div>
+
+        <% if (deliveries.length === 0) { %>
+          <div class="empty-state-box">
+            <div class="empty-icon"><i class="ri-file-list-line"></i></div>
+            <h4>No Delivery Slips Recorded Yet</h4>
+            <p>Start recording signed slips by selecting Neethi, Supplyco, or Others above.</p>
+          </div>
+        <% } else { %>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th># ID</th>
+                  <th>Delivery Date</th>
+                  <th>Service Channel</th>
+                  <th>Hospital / Medical Outlet Name</th>
+                  <th>Invoice / Order #</th>
+                  <th>Signed Proof Slip</th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% deliveries.slice(0, 8).forEach(d => { %>
+                  <tr>
+                    <td class="td-id">#<%= d.id %></td>
+                    <td>
+                      <div class="date-cell">
+                        <i class="ri-calendar-line"></i>
+                        <span><%= d.delivery_date %></span>
+                      </div>
+                    </td>
+                    <td>
+                      <% if (d.service_type.includes('Neethi')) { %>
+                        <span class="badge badge-neethi"><i class="ri-store-2-line"></i> <%= d.service_type %></span>
+                      <% } else if (d.service_type.includes('Supplyco')) { %>
+                        <span class="badge badge-supplyco"><i class="ri-shopping-cart-2-line"></i> <%= d.service_type %></span>
+                      <% } else { %>
+                        <span class="badge badge-other"><i class="ri-hospital-line"></i> <%= d.service_type %></span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <div class="hospital-name-text">
+                        <strong><%= d.hospital_name %></strong>
+                      </div>
+                    </td>
+                    <td>
+                      <code class="order-code"><%= d.order_number %></code>
+                    </td>
+                    <td>
+                      <a href="<%= d.signed_proof_path %>" target="_blank" class="slip-thumbnail-link">
+                        <img src="<%= d.signed_proof_path %>" alt="Signed Slip" class="slip-thumb" onerror="this.src='/uploads/sample_slip_neethi.svg'">
+                        <span class="view-slip-text"><i class="ri-zoom-in-line"></i> Inspect</span>
+                      </a>
+                    </td>
+                    <td class="text-right actions-cell">
+                      <div class="action-btn-group">
+                        <a href="/deliveries/<%= d.id %>" class="btn-action btn-action-view" title="Inspect Record">
+                          <i class="ri-eye-line"></i>
+                        </a>
+                        <a href="/deliveries/<%= d.id %>/edit" class="btn-action btn-action-edit" title="Edit Slip Details">
+                          <i class="ri-edit-line"></i>
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        <% } %>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-container">
+      <p>&copy; MEDICITY PHARMACEUTICAL HARIPAD &bull; Wholesale Pharmaceutical Delivery Proof &amp; Rate Management System</p>
+    </div>
+  </footer>
+
+</body>
+
+</html>

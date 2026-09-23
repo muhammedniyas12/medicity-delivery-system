@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit: <%= medicine.medicine_name %> | MEDICITY PHARMACEUTICAL HARIPAD</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+</head>
+
+<body>
+
+  <!-- Header -->
+  <header class="app-header wholesale-grand-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <div class="brand-logo-icon">
+          <i class="ri-edit-circle-fill"></i>
+        </div>
+        <div class="brand-title">
+          <div class="wholesale-distributor-badge">
+            <i class="ri-shield-star-fill"></i> ADMINISTRATOR &bull; EDIT RATE MASTER
+          </div>
+          <h1 class="main-shop-heading">MEDICITY PHARMACEUTICAL HARIPAD</h1>
+          <div class="brand-subtitle">
+            <span class="location-badge"><i class="ri-map-pin-2-fill"></i> Haripad, Kerala</span>
+            <span>Editing Particulars: <strong><%= medicine.medicine_name %></strong> (HSN: <%= medicine.hsn_code || '---' %>)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-user-controls">
+        <a href="/admin/medicines" class="btn btn-secondary">
+          <i class="ri-arrow-left-line"></i> Back to Rate Master
+        </a>
+        <a href="/logout" class="btn btn-sm btn-logout" title="Sign Out">
+          <i class="ri-logout-box-r-line"></i> Sign Out
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-wrapper">
+
+    <!-- Alert Notifications -->
+    <% if (message) { %>
+      <div class="alert alert-success">
+        <div><i class="ri-checkbox-circle-fill"></i> <%= message %></div>
+      </div>
+    <% } %>
+
+    <% if (error) { %>
+      <div class="alert alert-error">
+        <div><i class="ri-error-warning-fill"></i> <%= error %></div>
+      </div>
+    <% } %>
+
+    <div class="card form-container-card" style="max-width: 950px; margin: 0 auto;">
+      
+      <div class="card-header-flex">
+        <div class="card-header-titles">
+          <div class="badge badge-admin-glow" style="margin-bottom: 8px;">
+            <i class="ri-edit-line"></i> Full Medicine &amp; Rate Details Editor
+          </div>
+          <h2>Edit: <%= medicine.medicine_name %></h2>
+          <p>Modify HSN/SN code, particulars, company, batch number, expiry date, MFG, MRP, stock quantity, rates, and PDF rate sheet anytime</p>
+        </div>
+        <a href="/admin/medicines" class="btn btn-sm btn-secondary">
+          <i class="ri-close-line"></i> Cancel
+        </a>
+      </div>
+
+      <form action="/admin/medicines/<%= medicine.id %>/edit" method="POST" enctype="multipart/form-data" class="edit-medicine-form">
+        
+        <div class="form-grid-3">
+          <!-- HSN Code -->
+          <div class="form-group">
+            <label class="form-label" for="hsn_code"><i class="ri-barcode-box-line"></i> HSN / SN Code</label>
+            <input type="text" id="hsn_code" name="hsn_code" class="form-control" value="<%= medicine.hsn_code || '' %>" placeholder="e.g. 30049069">
+          </div>
+
+          <!-- Particulars (Medicine Name) -->
+          <div class="form-group flex-2">
+            <label class="form-label" for="med_name"><i class="ri-capsule-fill"></i> Particulars (Medicine Name) *</label>
+            <input type="text" id="med_name" name="medicine_name" class="form-control" value="<%= medicine.medicine_name %>" required>
+          </div>
+
+          <!-- Generic Composition -->
+          <div class="form-group flex-2">
+            <label class="form-label" for="generic_name"><i class="ri-flask-line"></i> Generic / Salt Composition</label>
+            <input type="text" id="generic_name" name="generic_name" class="form-control" value="<%= medicine.generic_name || '' %>">
+          </div>
+
+          <!-- Category -->
+          <div class="form-group">
+            <label class="form-label" for="med_category"><i class="ri-folder-2-line"></i> Category</label>
+            <select id="med_category" name="category" class="form-control">
+              <option value="Analgesics & Antipyretic" <%= medicine.category === 'Analgesics & Antipyretic' ? 'selected' : '' %>>Analgesics &amp; Antipyretic</option>
+              <option value="Anti-Diabetic" <%= medicine.category === 'Anti-Diabetic' ? 'selected' : '' %>>Anti-Diabetic</option>
+              <option value="Cardiovascular" <%= medicine.category === 'Cardiovascular' ? 'selected' : '' %>>Cardiovascular</option>
+              <option value="Antibiotics" <%= medicine.category === 'Antibiotics' ? 'selected' : '' %>>Antibiotics</option>
+              <option value="Gastrointestinal" <%= medicine.category === 'Gastrointestinal' ? 'selected' : '' %>>Gastrointestinal</option>
+              <option value="Injectables" <%= medicine.category === 'Injectables' ? 'selected' : '' %>>Injectables</option>
+              <option value="Medical Devices & Surgicals" <%= medicine.category === 'Medical Devices & Surgicals' ? 'selected' : '' %>>Medical Devices &amp; Surgicals</option>
+              <option value="Diagnostic Equipment" <%= medicine.category === 'Diagnostic Equipment' ? 'selected' : '' %>>Diagnostic Equipment</option>
+              <option value="Nutraceuticals & Vitamins" <%= medicine.category === 'Nutraceuticals & Vitamins' ? 'selected' : '' %>>Nutraceuticals &amp; Vitamins</option>
+              <option value="Ointments & Creams" <%= medicine.category === 'Ointments & Creams' ? 'selected' : '' %>>Ointments &amp; Creams</option>
+              <option value="Ayurvedic & Traditional" <%= medicine.category === 'Ayurvedic & Traditional' ? 'selected' : '' %>>Ayurvedic &amp; Traditional</option>
+              <option value="General" <%= (!medicine.category || medicine.category === 'General') ? 'selected' : '' %>>General Formulations</option>
+            </select>
+          </div>
+
+          <!-- Packing -->
+          <div class="form-group">
+            <label class="form-label" for="packing"><i class="ri-box-3-line"></i> Packing</label>
+            <input type="text" id="packing" name="packing" class="form-control" value="<%= medicine.packing || medicine.unit_pack || '' %>" placeholder="e.g. 10x10 Strips">
+          </div>
+
+          <!-- Company Name -->
+          <div class="form-group">
+            <label class="form-label" for="company"><i class="ri-building-line"></i> Company Name</label>
+            <input type="text" id="company" name="company" class="form-control" value="<%= medicine.company || medicine.manufacturer || '' %>" placeholder="e.g. ANCHOR / MEDICITY">
+          </div>
+
+          <!-- Batch No -->
+          <div class="form-group">
+            <label class="form-label" for="batch_no"><i class="ri-hashtag"></i> Batch No</label>
+            <input type="text" id="batch_no" name="batch_no" class="form-control" value="<%= medicine.batch_no || '' %>" placeholder="e.g. AMR26001">
+          </div>
+
+          <!-- Expiry Date -->
+          <div class="form-group">
+            <label class="form-label" for="expiry_date"><i class="ri-calendar-event-line"></i> Expiry Date</label>
+            <input type="text" id="expiry_date" name="expiry_date" class="form-control" value="<%= medicine.expiry_date || '' %>" placeholder="DD/MM/YYYY e.g. 01/05/2028">
+          </div>
+
+          <!-- MFG Date -->
+          <div class="form-group">
+            <label class="form-label" for="mfg_date"><i class="ri-calendar-check-line"></i> MFG Date</label>
+            <input type="text" id="mfg_date" name="mfg_date" class="form-control" value="<%= medicine.mfg_date || '' %>" placeholder="DD/MM/YYYY e.g. 01/05/2025">
+          </div>
+
+          <!-- M.R.P. -->
+          <div class="form-group">
+            <label class="form-label" for="mrp"><i class="ri-price-tag-3-line"></i> M.R.P. (₹)</label>
+            <input type="number" step="0.01" id="mrp" name="mrp" class="form-control" value="<%= medicine.mrp || 0 %>">
+          </div>
+
+          <!-- Quantity -->
+          <div class="form-group">
+            <label class="form-label" for="quantity"><i class="ri-numbers-line"></i> Quantity (Qty.)</label>
+            <input type="number" step="1" id="quantity" name="quantity" class="form-control" value="<%= medicine.quantity || 1 %>">
+          </div>
+
+          <!-- Free Qty -->
+          <div class="form-group">
+            <label class="form-label" for="free_qty"><i class="ri-gift-line"></i> Free Qty.</label>
+            <input type="number" step="1" id="free_qty" name="free_qty" class="form-control" value="<%= medicine.free_qty || 0 %>">
+          </div>
+        </div>
+
+        <!-- RATE & TAX EDIT SECTION -->
+        <div class="rate-calc-box" style="margin-top: 24px;">
+          <div class="calc-header">
+            <div class="calc-header-title"><i class="ri-calculator-line"></i> Adjust Rate, GST &amp; Tax (Live Net Rate Calculation)</div>
+            <div class="calc-subtitle">Net Rate is computed automatically whenever you change rates</div>
+          </div>
+
+          <div class="calc-inputs-grid">
+            <div class="form-group">
+              <label class="form-label" for="base_rate"><i class="ri-money-rupee-circle-line"></i> Rate / Base Price (₹) *</label>
+              <input type="number" step="0.01" id="base_rate" name="base_rate" class="form-control" value="<%= medicine.base_rate %>" required oninput="calculateLiveRate()">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="gst_percent"><i class="ri-percent-line"></i> GST %</label>
+              <input type="number" step="0.1" id="gst_percent" name="gst_percent" class="form-control" value="<%= medicine.gst_percent %>" oninput="calculateLiveRate()">
+              <div class="quick-gst-pills">
+                <span onclick="setGST(0)">0%</span>
+                <span onclick="setGST(5)">5%</span>
+                <span onclick="setGST(12)">12%</span>
+                <span onclick="setGST(18)">18%</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="tax_percent"><i class="ri-add-circle-line"></i> Tax / Cess %</label>
+              <input type="number" step="0.1" id="tax_percent" name="tax_percent" class="form-control" value="<%= medicine.tax_percent %>" oninput="calculateLiveRate()">
+            </div>
+          </div>
+
+          <!-- Live Result Display -->
+          <div class="calc-result-display">
+            <div class="calc-breakdown">
+              <div>Rate: <strong id="dispBase">₹<%= Number(medicine.base_rate).toFixed(2) %></strong></div>
+              <div>+ GST (<span id="dispGSTP"><%= medicine.gst_percent %></span>%): <strong id="dispGSTAmt">₹<%= Number((medicine.base_rate * medicine.gst_percent)/100).toFixed(2) %></strong></div>
+              <div>+ Tax (<span id="dispTaxP"><%= medicine.tax_percent %></span>%): <strong id="dispTaxAmt">₹<%= Number((medicine.base_rate * medicine.tax_percent)/100).toFixed(2) %></strong></div>
+            </div>
+            <div class="calc-total-badge">
+              <span>New Net Rate:</span>
+              <strong id="dispFinalRate">₹<%= Number(medicine.final_rate).toFixed(2) %></strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- PDF ATTACHMENT MANAGER -->
+        <div class="pdf-manager-section" style="margin-top: 24px;">
+          <label class="form-label"><i class="ri-file-pdf-2-fill"></i> Attached PDF Rate Sheet / Document</label>
+
+          <% if (medicine.pdf_attachment_path) { %>
+            <div class="existing-attachment-card">
+              <div class="attachment-info">
+                <div class="pdf-icon-circle"><i class="ri-file-pdf-2-fill"></i></div>
+                <div>
+                  <strong><%= medicine.pdf_attachment_name || 'Attached Rate Sheet PDF' %></strong>
+                  <div class="text-muted" style="font-size: 0.82rem;">File is currently attached to this medicine record</div>
+                </div>
+              </div>
+              <div class="attachment-actions">
+                <a href="<%= medicine.pdf_attachment_path %>" target="_blank" class="btn btn-sm btn-secondary">
+                  <i class="ri-eye-line"></i> View / Download
+                </a>
+                <label class="btn btn-sm btn-outline-danger remove-pdf-toggle">
+                  <input type="checkbox" name="remove_pdf" value="1" id="removePdfCb" onchange="toggleRemovePdf(this)">
+                  <span><i class="ri-delete-bin-line"></i> Detach PDF</span>
+                </label>
+              </div>
+            </div>
+          <% } %>
+
+          <div class="form-group file-drop-zone" style="margin-top: 12px;">
+            <input type="file" id="pdf_attachment" name="pdf_attachment" accept=".pdf,application/pdf" class="file-input">
+            <div class="drop-zone-content">
+              <i class="ri-upload-cloud-2-line"></i>
+              <span><%= medicine.pdf_attachment_path ? 'Upload a NEW PDF to replace the current file' : 'Attach an official PDF Rate Quotation or Specification Brochure' %></span>
+              <small>Format: .PDF &bull; Max 35MB</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Remarks -->
+        <div class="form-group" style="margin-top: 20px;">
+          <label class="form-label" for="remarks"><i class="ri-sticky-note-line"></i> Remarks / Batch Notes</label>
+          <textarea id="remarks" name="remarks" class="form-control" rows="2"><%= medicine.remarks || '' %></textarea>
+        </div>
+
+        <div class="form-actions-row" style="margin-top: 30px; display: flex; gap: 15px; justify-content: flex-end;">
+          <a href="/admin/medicines" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary btn-lg">
+            <i class="ri-save-3-fill"></i> Save Medicine &amp; Rate Updates
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+
+  </main>
+
+  <script>
+    function setGST(val) {
+      document.getElementById('gst_percent').value = val;
+      calculateLiveRate();
+    }
+
+    function calculateLiveRate() {
+      const base = parseFloat(document.getElementById('base_rate').value) || 0;
+      const gst = parseFloat(document.getElementById('gst_percent').value) || 0;
+      const tax = parseFloat(document.getElementById('tax_percent').value) || 0;
+
+      const gstAmt = (base * gst) / 100;
+      const taxAmt = (base * tax) / 100;
+      const finalVal = base + gstAmt + taxAmt;
+
+      document.getElementById('dispBase').innerText = '₹' + base.toFixed(2);
+      document.getElementById('dispGSTP').innerText = gst;
+      document.getElementById('dispGSTAmt').innerText = '₹' + gstAmt.toFixed(2);
+      document.getElementById('dispTaxP').innerText = tax;
+      document.getElementById('dispTaxAmt').innerText = '₹' + taxAmt.toFixed(2);
+      document.getElementById('dispFinalRate').innerText = '₹' + finalVal.toFixed(2);
+    }
+
+    function toggleRemovePdf(checkbox) {
+      if (checkbox.checked) {
+        checkbox.parentElement.classList.add('active-remove');
+      } else {
+        checkbox.parentElement.classList.remove('active-remove');
+      }
+    }
+  </script>
+
+</body>
+</html>

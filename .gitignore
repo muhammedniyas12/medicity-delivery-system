@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Uploads / user files (keep directory structure if needed)
+frontend/public/uploads/*
+!frontend/public/uploads/.gitkeep
+
+# SQLite database file (optional: uncomment if you don't want to commit the local database)
+# backend/medicity.db
+
+# OS Files
+.DS_Store
+Thumbs.db

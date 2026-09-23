@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | MEDICITY PHARMACEUTICAL HARIPAD</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+</head>
+<body class="login-body">
+
+  <div class="login-wrapper">
+    
+    <!-- Wholesale Brand Header Box -->
+    <div class="login-brand-header">
+      <div class="brand-logo-glow">
+        <i class="ri-hospital-fill"></i>
+      </div>
+      <h1 class="login-title">MEDICITY PHARMACEUTICAL HARIPAD</h1>
+      <p class="login-subtitle">
+        <span class="wholesale-tag"><i class="ri-shield-star-fill"></i> WHOLESALE PHARMACEUTICAL DISTRIBUTOR</span>
+      </p>
+      <div class="login-subtext">Government &amp; Institutional Supply Hub &bull; Alappuzha, Kerala</div>
+    </div>
+
+    <!-- Login Dual Card -->
+    <div class="card login-card">
+
+      <!-- Role Selector Tabs -->
+      <div class="login-role-tabs">
+        <button 
+          type="button" 
+          class="role-tab <%= activeTab === 'worker' ? 'active' : '' %>" 
+          id="tabWorkerBtn"
+          onclick="switchLoginRole('worker')"
+        >
+          <div class="role-tab-icon"><i class="ri-truck-line"></i></div>
+          <div class="role-tab-text">
+            <span class="role-tab-title">Worker Portal</span>
+            <span class="role-tab-desc">Delivery Slip Entry</span>
+          </div>
+        </button>
+
+        <button 
+          type="button" 
+          class="role-tab <%= activeTab === 'admin' ? 'active' : '' %>" 
+          id="tabAdminBtn"
+          onclick="switchLoginRole('admin')"
+        >
+          <div class="role-tab-icon"><i class="ri-shield-user-line"></i></div>
+          <div class="role-tab-text">
+            <span class="role-tab-title">Admin Portal</span>
+            <span class="role-tab-desc">Medicine Rates &amp; Slips</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- Card Header dynamically updating -->
+      <div class="login-card-header" id="loginHeaderInfo">
+        <% if (activeTab === 'admin') { %>
+          <div class="login-role-indicator badge-admin-glow">
+            <i class="ri-admin-line"></i> Administrator Access Mode
+          </div>
+          <h2>Admin Master Sign In</h2>
+          <p>Access medicine rates, tax &amp; GST master, PDF rate sheets, and delivery proofs</p>
+        <% } else { %>
+          <div class="login-role-indicator badge-worker-glow">
+            <i class="ri-user-star-line"></i> Staff &amp; Delivery Worker Mode
+          </div>
+          <h2>Worker &amp; Staff Sign In</h2>
+          <p>Upload signed delivery proof slips for Neethi, Supplyco &amp; Govt Hospitals</p>
+        <% } %>
+      </div>
+
+      <!-- Feedback Alerts -->
+      <% if (error) { %>
+        <div class="alert alert-error" style="margin-bottom: 20px;">
+          <div><i class="ri-error-warning-fill"></i> <%= error %></div>
+        </div>
+      <% } %>
+
+      <% if (message) { %>
+        <div class="alert alert-success" style="margin-bottom: 20px;">
+          <div><i class="ri-checkbox-circle-fill"></i> <%= message %></div>
+        </div>
+      <% } %>
+
+      <form action="/login" method="POST" class="login-form" id="loginForm">
+        <!-- Hidden Role Tracker -->
+        <input type="hidden" name="login_role" id="loginRoleInput" value="<%= activeTab %>">
+
+        <div class="form-group">
+          <label class="form-label" for="username">
+            <i class="ri-user-smile-line"></i> <span id="usernameLabel"><%= activeTab === 'admin' ? 'Admin Username' : 'Worker / Staff Username' %></span>
+          </label>
+          <div class="input-icon-wrapper">
+            <input 
+              type="text" 
+              id="username" 
+              name="username" 
+              class="form-control" 
+              placeholder="<%= activeTab === 'admin' ? 'e.g. admin' : 'e.g. worker' %>" 
+              value="<%= activeTab === 'admin' ? 'admin' : 'worker' %>"
+              required 
+              autofocus
+            >
+            <span class="input-icon"><i class="ri-user-3-line"></i></span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">
+            <i class="ri-key-2-line"></i> Password
+          </label>
+          <div class="input-icon-wrapper">
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              class="form-control" 
+              placeholder="Enter password" 
+              value="<%= activeTab === 'admin' ? 'admin@medicity' : 'worker@medicity' %>"
+              required
+            >
+            <button type="button" class="btn-toggle-pw" onclick="togglePassword()" title="Toggle password visibility">
+              <i class="ri-eye-line" id="togglePwIcon"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Credential Helper Hints -->
+        <div class="quick-credentials-hint" id="credentialHelper">
+          <% if (activeTab === 'admin') { %>
+            <div class="hint-card hint-admin">
+              <i class="ri-information-fill"></i>
+              <span><strong>Admin Credentials:</strong> User: <code>admin</code> | Pass: <code>admin@medicity</code></span>
+            </div>
+          <% } else { %>
+            <div class="hint-card hint-worker">
+              <i class="ri-information-fill"></i>
+              <span><strong>Worker Credentials:</strong> User: <code>worker</code> | Pass: <code>worker@medicity</code> (or <code>medicity</code>/<code>121212</code>)</span>
+            </div>
+          <% } %>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-login" id="submitLoginBtn">
+          <span id="btnText"><%= activeTab === 'admin' ? 'Sign In as Administrator' : 'Sign In as Delivery Worker' %></span>
+          <i class="ri-arrow-right-line"></i>
+        </button>
+
+      </form>
+
+      <div class="login-footer-info">
+        <div class="portal-badge-row">
+          <span class="badge-mini"><i class="ri-shield-check-fill"></i> Role Based Security</span>
+          <span class="badge-mini"><i class="ri-file-pdf-2-fill"></i> PDF Catalogues</span>
+          <span class="badge-mini"><i class="ri-store-2-fill"></i> 3 Channels</span>
+        </div>
+        <p class="security-text">
+          <i class="ri-lock-2-line"></i> Medicity Pharmaceutical Delivery &amp; Rate Management Portal
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    function togglePassword() {
+      const pwdInput = document.getElementById('password');
+      const icon = document.getElementById('togglePwIcon');
+      if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+        icon.className = 'ri-eye-off-line';
+      } else {
+        pwdInput.type = 'password';
+        icon.className = 'ri-eye-line';
+      }
+    }
+
+    function switchLoginRole(role) {
+      const tabWorker = document.getElementById('tabWorkerBtn');
+      const tabAdmin = document.getElementById('tabAdminBtn');
+      const roleInput = document.getElementById('loginRoleInput');
+      const headerInfo = document.getElementById('loginHeaderInfo');
+      const usernameInput = document.getElementById('username');
+      const passwordInput = document.getElementById('password');
+      const usernameLabel = document.getElementById('usernameLabel');
+      const btnText = document.getElementById('btnText');
+      const credHelper = document.getElementById('credentialHelper');
+
+      roleInput.value = role;
+
+      if (role === 'admin') {
+        tabAdmin.classList.add('active');
+        tabWorker.classList.remove('active');
+
+        headerInfo.innerHTML = `
+          <div class="login-role-indicator badge-admin-glow">
+            <i class="ri-admin-line"></i> Administrator Access Mode
+          </div>
+          <h2>Admin Master Sign In</h2>
+          <p>Access medicine rates, tax &amp; GST master, PDF rate sheets, and delivery proofs</p>
+        `;
+
+        usernameLabel.innerText = 'Admin Username';
+        usernameInput.placeholder = 'e.g. admin';
+        usernameInput.value = 'admin';
+        passwordInput.value = 'admin@medicity';
+        btnText.innerText = 'Sign In as Administrator';
+
+        credHelper.innerHTML = `
+          <div class="hint-card hint-admin">
+            <i class="ri-information-fill"></i>
+            <span><strong>Admin Credentials:</strong> User: <code>admin</code> | Pass: <code>admin@medicity</code></span>
+          </div>
+        `;
+      } else {
+        tabWorker.classList.add('active');
+        tabAdmin.classList.remove('active');
+
+        headerInfo.innerHTML = `
+          <div class="login-role-indicator badge-worker-glow">
+            <i class="ri-user-star-line"></i> Staff &amp; Delivery Worker Mode
+          </div>
+          <h2>Worker &amp; Staff Sign In</h2>
+          <p>Upload signed delivery proof slips for Neethi, Supplyco &amp; Govt Hospitals</p>
+        `;
+
+        usernameLabel.innerText = 'Worker / Staff Username';
+        usernameInput.placeholder = 'e.g. worker';
+        usernameInput.value = 'worker';
+        passwordInput.value = 'worker@medicity';
+        btnText.innerText = 'Sign In as Delivery Worker';
+
+        credHelper.innerHTML = `
+          <div class="hint-card hint-worker">
+            <i class="ri-information-fill"></i>
+            <span><strong>Worker Credentials:</strong> User: <code>worker</code> | Pass: <code>worker@medicity</code> (or <code>medicity</code>/<code>121212</code>)</span>
+          </div>
+        `;
+      }
+    }
+  </script>
+
+</body>
+</html>

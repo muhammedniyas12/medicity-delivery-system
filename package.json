@@ -1,0 +1,30 @@
+{
+  "name": "medicity-delivery-proof-system",
+  "version": "1.0.0",
+  "description": "Delivery Proof & Rate Master System for MEDICITY PHARMACEUTICAL HARIPAD",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node --watch backend/server.js",
+    "backend": "node backend/server.js",
+    "test": "node backend/scripts/test_app.js"
+  },
+  "keywords": [
+    "delivery-proof",
+    "medicity",
+    "pharmaceutical",
+    "express",
+    "sqlite3",
+    "ejs"
+  ],
+  "author": "MEDICITY PHARMACEUTICAL HARIPAD",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.8",
+    "ejs": "^3.1.10",
+    "express": "^4.22.2",
+    "multer": "^1.4.5-lts.2",
+    "sqlite3": "^5.1.7",
+    "xlsx": "^0.18.5"
+  }
+}

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit &amp; Replace Slip #<%= delivery.id %> | MEDICITY PHARMACEUTICAL HARIPAD</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+</head>
+
+<body>
+
+  <!-- Top Wholesale Shop Header -->
+  <header class="app-header wholesale-grand-header no-print">
+    <div class="header-container">
+      <div class="brand-section">
+        <div class="brand-logo-icon">
+          <i class="ri-edit-2-line"></i>
+        </div>
+        <div class="brand-title">
+          <div class="wholesale-distributor-badge">
+            <i class="ri-award-fill"></i> WHOLESALE PHARMACEUTICAL DISTRIBUTOR
+          </div>
+          <h1 class="main-shop-heading" style="font-size: 1.5rem;">MEDICITY PHARMACEUTICAL HARIPAD</h1>
+          <div class="brand-subtitle">
+            <span class="location-badge">Haripad, Alappuzha, Kerala</span>
+            <span>Delivery Slip Correction &amp; Replacement Desk</span>
+          </div>
+        </div>
+      </div>
+      <div class="header-user-controls">
+        <div class="header-nav-links">
+          <a href="/" class="nav-btn"><i class="ri-dashboard-line"></i> Dashboard</a>
+          <% if (currentUser && currentUser.role==='admin' ) { %>
+            <a href="/admin/medicines" class="nav-btn"><i class="ri-medicine-bottle-line"></i> Medicine Rates</a>
+            <% } %>
+              <a href="/history" class="nav-btn"><i class="ri-archive-line"></i> Delivery Slips</a>
+        </div>
+
+        <div class="user-profile-pill <%= currentUser && currentUser.role === 'admin' ? 'admin-pill' : '' %>">
+          <span class="user-avatar-circle <%= currentUser && currentUser.role === 'admin' ? 'admin-avatar' : '' %>">
+            <i
+              class="<%= currentUser && currentUser.role === 'admin' ? 'ri-shield-star-fill' : 'ri-user-star-line' %>"></i>
+          </span>
+          <div class="user-info-text">
+            <span class="user-role">
+              <%= currentUser && currentUser.role==='admin' ? 'Administrator' : 'Delivery Worker' %>
+            </span>
+            <span class="user-name">
+              <%= currentUser ? currentUser.username : 'Worker' %>
+            </span>
+          </div>
+        </div>
+
+        <a href="/logout" class="btn btn-sm btn-logout" title="Sign Out">
+          <i class="ri-logout-box-r-line"></i> Sign Out
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-wrapper upload-page-wrapper" style="margin-top: -20px;">
+
+    <!-- Breadcrumbs -->
+    <nav class="breadcrumb-nav">
+      <a href="/"><i class="ri-dashboard-line"></i> Dashboard</a>
+      <span class="breadcrumb-sep"><i class="ri-arrow-right-s-line"></i></span>
+      <a href="/history"><i class="ri-history-line"></i> History</a>
+      <span class="breadcrumb-sep"><i class="ri-arrow-right-s-line"></i></span>
+      <span class="breadcrumb-current">Edit &amp; Replace Slip #<%= delivery.id %></span>
+    </nav>
+
+    <!-- Error/Notice Alerts -->
+    <% if (error) { %>
+      <div class="alert alert-error">
+        <div><i class="ri-error-warning-fill"></i>
+          <%= error %>
+        </div>
+      </div>
+      <% } %>
+
+        <div class="upload-container">
+
+          <!-- Left Edit / Replace Card -->
+          <section class="card upload-card" style="border-top: 5px solid #d97706;">
+
+            <div class="upload-card-header"
+              style="border-bottom: 1px solid var(--surface-border); background: #fffbeb;">
+              <div class="channel-icon-large" style="background: #fef3c7; color: #d97706;">
+                <i class="ri-edit-box-line"></i>
+              </div>
+              <div class="channel-header-text">
+                <div class="channel-pill" style="background: #fef3c7; color: #b45309;">
+                  <i class="ri-pencil-line"></i> EDIT / REPLACE SLIP
+                </div>
+                <h2>Correct Slip Details or Replace Photo</h2>
+                <p>Modify date, recipient, order reference, or replace wrong photo with new signed paper slip</p>
+              </div>
+            </div>
+
+            <form action="/deliveries/<%= delivery.id %>/edit" method="POST" enctype="multipart/form-data"
+              class="upload-form">
+
+              <div class="form-grid-2">
+                <!-- Delivery Date -->
+                <div class="form-group">
+                  <label class="form-label" for="delivery_date">
+                    <i class="ri-calendar-2-line"></i> Delivery Date <span class="required">*</span>
+                  </label>
+                  <input type="date" id="delivery_date" name="delivery_date" class="form-control"
+                    value="<%= delivery.delivery_date %>" required>
+                </div>
+
+                <!-- Service Channel Dropdown -->
+                <div class="form-group">
+                  <label class="form-label" for="service_type">
+                    <i class="ri-store-2-line"></i> Service Channel <span class="required">*</span>
+                  </label>
+                  <select id="service_type" name="service_type" class="form-control" required>
+                    <option value="Neethi Store" <%=delivery.service_type==='Neethi Store' ? 'selected' : '' %>>Neethi
+                      Medical Store</option>
+                    <option value="Supplyco" <%=delivery.service_type==='Supplyco' ? 'selected' : '' %>>Supplyco
+                      Pharmacy</option>
+                    <option value="Direct Govt Order" <%=delivery.service_type==='Direct Govt Order' ? 'selected' : ''
+                      %>>Direct Govt / Taluk Hospital</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Destination Hospital / Outlet Name -->
+              <div class="form-group">
+                <label class="form-label" for="hospital_name">
+                  <i class="ri-map-pin-line"></i> Hospital / Outlet Destination Name <span class="required">*</span>
+                </label>
+                <input type="text" id="hospital_name" name="hospital_name" class="form-control"
+                  value="<%= delivery.hospital_name %>" required>
+              </div>
+
+              <!-- Order / Dispatch Slip Number -->
+              <div class="form-group">
+                <label class="form-label" for="order_number">
+                  <i class="ri-file-text-line"></i> Invoice / Challan Reference # <span class="required">*</span>
+                </label>
+                <input type="text" id="order_number" name="order_number" class="form-control"
+                  value="<%= delivery.order_number %>" required>
+              </div>
+
+              <!-- Current & New Slip Image Area -->
+              <div class="form-group upload-file-group">
+                <label class="form-label">
+                  <i class="ri-camera-lens-fill"></i> Signed Delivery Slip Photo
+                </label>
+
+                <div class="current-slip-preview-box">
+                  <div class="current-slip-thumb-wrap">
+                    <img src="<%= delivery.signed_proof_path %>" alt="Current Slip" class="current-slip-image"
+                      onerror="this.src='/uploads/sample_slip_neethi.svg'">
+                  </div>
+                  <div class="current-slip-info">
+                    <strong>Current Active Photo</strong>
+                    <p>Upload below only if you want to replace this existing paper slip photo.</p>
+                    <a href="<%= delivery.signed_proof_path %>" target="_blank" class="btn btn-sm btn-secondary"
+                      style="margin-top: 8px;">
+                      <i class="ri-zoom-in-line"></i> View Current Full Photo
+                    </a>
+                  </div>
+                </div>
+
+                <!-- Optional Replacement Picker -->
+                <div class="drop-zone" id="dropZone" style="margin-top: 14px; border-style: dashed;">
+                  <input type="file" id="signed_proof" name="signed_proof"
+                    accept="image/jpeg,image/png,image/webp,image/jpg" class="file-input"
+                    onchange="handleImagePreview(this)">
+
+                  <div class="drop-zone-prompt" id="dropPrompt">
+                    <div class="upload-icon-circle" style="background: #fef3c7; color: #d97706;">
+                      <i class="ri-camera-switch-line"></i>
+                    </div>
+                    <h4>Select New Photo to REPLACE Current Slip (Optional)</h4>
+                    <p>Leave empty if you only want to correct text/dates above</p>
+                    <span class="upload-types-badge">Supported: JPG, PNG, WEBP</span>
+                  </div>
+
+                  <div class="preview-container" id="previewContainer" style="display: none;">
+                    <img id="imagePreview" src="" alt="Proof Slip Preview" class="preview-image">
+                    <div class="preview-info-overlay">
+                      <span id="previewFileName" class="preview-filename"></span>
+                      <button type="button" class="btn btn-sm btn-change-img" onclick="resetFilePicker()">
+                        <i class="ri-refresh-line"></i> Change Photo
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Form Action Buttons -->
+              <div class="form-actions">
+                <a href="/deliveries/<%= delivery.id %>" class="btn btn-secondary">
+                  <i class="ri-close-line"></i> Cancel
+                </a>
+                <button type="submit" class="btn btn-primary" style="background: #d97706; border-color: #d97706;">
+                  <i class="ri-save-line"></i>
+                  <span>Save Slip Updates</span>
+                </button>
+              </div>
+
+            </form>
+
+          </section>
+
+        </div>
+
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-container">
+      <p>&copy; MEDICITY PHARMACEUTICAL HARIPAD &bull; Wholesale Institutional Medicine Supply Desk</p>
+    </div>
+  </footer>
+
+  <script>
+    function handleImagePreview(input) {
+      const dropPrompt = document.getElementById('dropPrompt');
+      const previewContainer = document.getElementById('previewContainer');
+      const imagePreview = document.getElementById('imagePreview');
+      const previewFileName = document.getElementById('previewFileName');
+
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+          imagePreview.src = e.target.result;
+          previewFileName.textContent = 'New File: ' + file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+          dropPrompt.style.display = 'none';
+          previewContainer.style.display = 'block';
+        };
+
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function resetFilePicker() {
+      const fileInput = document.getElementById('signed_proof');
+      const dropPrompt = document.getElementById('dropPrompt');
+      const previewContainer = document.getElementById('previewContainer');
+      const imagePreview = document.getElementById('imagePreview');
+
+      fileInput.value = '';
+      imagePreview.src = '';
+      dropPrompt.style.display = 'flex';
+      previewContainer.style.display = 'none';
+    }
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>
+    <%= channelInfo.title %> | MEDICITY PHARMACEUTICAL HARIPAD
+  </title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+</head>
+
+<body>
+
+  <!-- Top App Header -->
+  <header class="app-header wholesale-grand-header">
+    <div class="header-container">
+      <div class="brand-section">
+        <div class="brand-logo-icon">
+          <i class="ri-hospital-line"></i>
+        </div>
+        <div class="brand-title">
+          <div class="wholesale-distributor-badge">
+            <i class="ri-award-fill"></i> WHOLESALE PHARMACEUTICAL DISTRIBUTOR
+          </div>
+          <h1 class="main-shop-heading">MEDICITY PHARMACEUTICAL HARIPAD</h1>
+          <div class="brand-subtitle">
+            <span class="location-badge"><i class="ri-map-pin-2-fill"></i> Haripad, Alappuzha, Kerala</span>
+            <span>Delivery Proof Slip Capture &bull; <%= channelInfo.name %> Channel</span>
+          </div>
+        </div>
+      </div>
+      <div class="header-user-controls">
+        <div class="header-nav-links">
+          <a href="/" class="nav-btn"><i class="ri-dashboard-line"></i> Dashboard</a>
+          <% if (currentUser && currentUser.role === 'admin') { %>
+            <a href="/admin/medicines" class="nav-btn"><i class="ri-medicine-bottle-line"></i> Medicine Rates</a>
+          <% } %>
+          <a href="/history" class="nav-btn"><i class="ri-archive-line"></i> Delivery Slips</a>
+        </div>
+
+        <div class="user-profile-pill <%= currentUser && currentUser.role === 'admin' ? 'admin-pill' : '' %>">
+          <span class="user-avatar-circle <%= currentUser && currentUser.role === 'admin' ? 'admin-avatar' : '' %>">
+            <i class="<%= currentUser && currentUser.role === 'admin' ? 'ri-shield-star-fill' : 'ri-user-star-line' %>"></i>
+          </span>
+          <div class="user-info-text">
+            <span class="user-role"><%= currentUser && currentUser.role === 'admin' ? 'Administrator' : 'Delivery Worker' %></span>
+            <span class="user-name"><%= currentUser ? currentUser.username : 'Worker' %></span>
+          </div>
+        </div>
+
+        <a href="/logout" class="btn btn-sm btn-logout" title="Sign Out">
+          <i class="ri-logout-box-r-line"></i> Sign Out
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Wrapper -->
+  <main class="main-wrapper upload-page-wrapper">
+
+    <!-- Breadcrumb Navigation -->
+    <nav class="breadcrumb-nav">
+      <a href="/"><i class="ri-dashboard-line"></i> Dashboard</a>
+      <span class="breadcrumb-sep"><i class="ri-arrow-right-s-line"></i></span>
+      <span class="breadcrumb-current">
+        <%= channelInfo.title %>
+      </span>
+    </nav>
+
+    <!-- Upload Card Container -->
+    <div class="upload-container">
+
+      <section class="card upload-card channel-<%= channelKey %>">
+
+        <!-- Channel Header Banner -->
+        <div class="upload-card-header" style="border-bottom: 2px solid <%= channelInfo.accentColor %>;">
+          <div class="channel-icon-large"
+            style="background: <%= channelInfo.bgLight %>; color: <%= channelInfo.accentColor %>;">
+            <i class="<%= channelInfo.icon %>"></i>
+          </div>
+          <div class="channel-header-text">
+            <div class="channel-pill"
+              style="background: <%= channelInfo.bgLight %>; color: <%= channelInfo.accentColor %>;">
+              <i class="ri-checkbox-circle-fill"></i>
+              <%= channelInfo.name %> CHANNEL
+            </div>
+            <h2>
+              <%= channelInfo.title %>
+            </h2>
+            <p>
+              <%= channelInfo.subtitle %>
+            </p>
+          </div>
+        </div>
+
+        <!-- Feedback Alerts -->
+        <% if (error) { %>
+          <div class="alert alert-error" style="margin: 20px 24px 0;">
+            <div><i class="ri-error-warning-fill"></i>
+              <%= error %>
+            </div>
+          </div>
+          <% } %>
+
+            <% if (message) { %>
+              <div class="alert alert-success" style="margin: 20px 24px 0;">
+                <div><i class="ri-checkbox-circle-fill"></i>
+                  <%= message %>
+                </div>
+              </div>
+              <% } %>
+
+                <!-- Upload Form -->
+                <form action="/deliveries" method="POST" enctype="multipart/form-data" class="upload-form">
+
+                  <!-- Hidden fixed channel service_type -->
+                  <input type="hidden" name="service_type" value="<%= channelInfo.serviceType %>">
+                  <input type="hidden" name="return_channel" value="<%= channelKey %>">
+
+                  <div class="form-grid-2">
+                    <!-- Delivery Date -->
+                    <div class="form-group">
+                      <label class="form-label" for="delivery_date">
+                        <i class="ri-calendar-2-line"></i> Delivery Date <span class="required">*</span>
+                      </label>
+                      <input type="date" id="delivery_date" name="delivery_date" class="form-control"
+                        value="<%= todayDate %>" required>
+                      <span class="form-help">Date when the medicines were delivered</span>
+                    </div>
+
+                    <!-- Order / Dispatch Slip Number -->
+                    <div class="form-group">
+                      <label class="form-label" for="order_number">
+                        <i class="ri-file-text-line"></i>
+                        <%= channelInfo.orderLabel %> <span class="required">*</span>
+                      </label>
+                      <input type="text" id="order_number" name="order_number" class="form-control"
+                        placeholder="<%= channelInfo.orderPlaceholder %>" required>
+                      <span class="form-help">Printed invoice or challan code on paper slip</span>
+                    </div>
+                  </div>
+
+                  <!-- Destination Hospital / Outlet Name -->
+                  <div class="form-group">
+                    <label class="form-label" for="hospital_name">
+                      <i class="ri-map-pin-line"></i>
+                      <%= channelInfo.locationLabel %> <span class="required">*</span>
+                    </label>
+                    <input type="text" id="hospital_name" name="hospital_name" class="form-control"
+                      placeholder="<%= channelInfo.locationPlaceholder %>" required>
+                    <span class="form-help">Hospital, PHC, CHC, Neethi or Supplyco store receiving delivery</span>
+                  </div>
+
+                  <!-- Paper Slip Photo Upload Area -->
+                  <div class="form-group upload-file-group">
+                    <label class="form-label" for="signed_proof">
+                      <i class="ri-camera-lens-fill"></i> Signed Paper Delivery Slip Photo <span
+                        class="required">*</span>
+                    </label>
+
+                    <div class="drop-zone" id="dropZone">
+                      <input type="file" id="signed_proof" name="signed_proof"
+                        accept="image/jpeg,image/png,image/webp,image/jpg" class="file-input" required
+                        onchange="handleImagePreview(this)">
+
+                      <div class="drop-zone-prompt" id="dropPrompt">
+                        <div class="upload-icon-circle">
+                          <i class="ri-upload-cloud-2-line"></i>
+                        </div>
+                        <h4>Tap to Snap Photo or Choose Delivery Slip Image</h4>
+                        <p>Upload signed and stamped physical delivery proof sheet</p>
+                        <span class="upload-types-badge">Supported: JPG, PNG, WEBP &bull; Max: 25MB</span>
+                      </div>
+
+                      <div class="preview-container" id="previewContainer" style="display: none;">
+                        <img id="imagePreview" src="" alt="Proof Slip Preview" class="preview-image">
+                        <div class="preview-info-overlay">
+                          <span id="previewFileName" class="preview-filename"></span>
+                          <button type="button" class="btn btn-sm btn-change-img" onclick="resetFilePicker()">
+                            <i class="ri-refresh-line"></i> Change Photo
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Form Action Buttons -->
+                  <div class="form-actions">
+                    <a href="/" class="btn btn-secondary">
+                      <i class="ri-close-line"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary btn-submit-slip">
+                      <i class="ri-checkbox-circle-fill"></i>
+                      <span>Save &amp; Record Signed Slip</span>
+                    </button>
+                  </div>
+
+                </form>
+
+      </section>
+
+    </div>
+
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-container">
+      <p>&copy; MEDICITY PHARMACEUTICAL HARIPAD &bull; Wholesale Institutional Medicine Supply Desk</p>
+    </div>
+  </footer>
+
+  <script>
+    function handleImagePreview(input) {
+      const dropPrompt = document.getElementById('dropPrompt');
+      const previewContainer = document.getElementById('previewContainer');
+      const imagePreview = document.getElementById('imagePreview');
+      const previewFileName = document.getElementById('previewFileName');
+
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+          imagePreview.src = e.target.result;
+          previewFileName.textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+          dropPrompt.style.display = 'none';
+          previewContainer.style.display = 'block';
+        };
+
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function resetFilePicker() {
+      const fileInput = document.getElementById('signed_proof');
+      const dropPrompt = document.getElementById('dropPrompt');
+      const previewContainer = document.getElementById('previewContainer');
+      const imagePreview = document.getElementById('imagePreview');
+
+      fileInput.value = '';
+      imagePreview.src = '';
+      dropPrompt.style.display = 'flex';
+      previewContainer.style.display = 'none';
+    }
+  </script>
+
+</body>
+
+</html>
