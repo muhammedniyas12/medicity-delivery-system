@@ -67,5 +67,5 @@ Open your browser at: **[http://localhost:3000](http://localhost:3000)**
 
 | Role | Username | Password | Access |
 |---|---|---|---|
-| **Admin** | `admin` | `admin@medicity` | Full access: Medicine Rates Master, Price Calculations, Analytics, All Deliveries |
-| **Staff / Worker** | `worker` | `worker@medicity` | Upload Delivery Proof Slips, Browse Channel Archives |
+| **Admin** | `admin` | `admin@9447` | Full access: Medicine Rates Master, Price Calculations, Analytics, All Deliveries |
+| **Staff / Worker** | `worker` | `worker 1212` *(or `worker1212`)* | Upload Delivery Proof Slips, Browse Channel Archives |

@@ -162,7 +162,7 @@ app.post('/login', (req, res) => {
   // Admin Verification
   if (role === 'admin') {
     const validAdminUsers = ['admin', 'medicity_admin', 'director'];
-    const validAdminPass = ['admin@medicity', 'admin123', 'admin', 'medicity123'];
+    const validAdminPass = ['admin@9447', 'admin@medicity', 'admin123', 'admin', 'medicity123'];
 
     if (validAdminUsers.includes((username || '').trim().toLowerCase()) && validAdminPass.includes((password || '').trim())) {
       authenticatedUser = {
@@ -175,7 +175,7 @@ app.post('/login', (req, res) => {
   } else {
     // Worker / Delivery Staff Verification
     const validWorkerUsers = ['worker', 'medicity', 'staff', 'delivery', 'agent'];
-    const validWorkerPass = ['worker@medicity', 'worker123', '121212', 'medicity', 'worker'];
+    const validWorkerPass = ['worker 1212', 'worker1212', 'worker@medicity', 'worker123', '121212', 'medicity', 'worker'];
 
     if (validWorkerUsers.includes((username || '').trim().toLowerCase()) && validWorkerPass.includes((password || '').trim())) {
       authenticatedUser = {
