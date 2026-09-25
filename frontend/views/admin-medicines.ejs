@@ -106,33 +106,40 @@
         <span class="stat-pill-label"><i class="ri-percent-line"></i> Standard GST:</span>
         <span class="stat-pill-num text-supplyco"><%= Number(stats.avg_gst || 12).toFixed(1) %>%</span>
       </div>
-      <div class="stat-pill">
-        <span class="stat-pill-label"><i class="ri-file-pdf-2-line"></i> Attached PDFs:</span>
-        <span class="stat-pill-num text-other"><%= stats.pdf_count %></span>
-      </div>
     </div>
 
-    <!-- Search & Filter Controls -->
+    <!-- Search & Filter Controls with Alphabet Directory -->
     <div class="card filter-card" style="margin-bottom: 24px;">
-      <form action="/admin/medicines" method="GET" class="filter-form">
+      <form action="/admin/medicines" method="GET" class="filter-form" id="medFilterForm" onsubmit="return false;">
         
         <div class="filter-group flex-2">
-          <label class="filter-label"><i class="ri-search-line"></i> Search Particulars / HSN / Company / Batch</label>
-          <div class="input-icon-wrapper">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label class="filter-label" style="margin-bottom: 0;" for="medSearchInput">
+              <i class="ri-search-line"></i> Search Particulars / Alphabet / HSN / Company
+            </label>
+            <span class="alphabet-live-feedback" id="alphabetFeedback">
+              <i class="ri-flashlight-fill"></i> Instant Alphabet &amp; Name Search
+            </span>
+          </div>
+          <div class="search-input-container">
             <input 
               type="text" 
               name="search" 
+              id="medSearchInput"
               class="form-control" 
-              placeholder="e.g. ELSARTAN, Paracetamol, 30049069, ROMSONS, AMR26001..." 
+              placeholder="Type any alphabet (e.g. A, B, C...) or medicine name (e.g. Acenext, Azithromycin, Calpol)..." 
               value="<%= filters.search %>"
+              autocomplete="off"
+              oninput="onMedSearchInput()"
             >
+            <button type="button" id="clearSearchBtn" class="search-clear-btn" onclick="clearLiveSearch()" title="Clear Search">&times;</button>
             <span class="input-icon"><i class="ri-search-2-line"></i></span>
           </div>
         </div>
 
         <div class="filter-group">
-          <label class="filter-label"><i class="ri-filter-3-line"></i> Category</label>
-          <select name="category" class="form-control">
+          <label class="filter-label" for="medCategorySelect"><i class="ri-filter-3-line"></i> Category</label>
+          <select name="category" id="medCategorySelect" class="form-control" onchange="filterMedicinesLive()">
             <option value="All" <%= filters.category === 'All' ? 'selected' : '' %>>All Categories</option>
             <option value="Analgesics & Antipyretic" <%= filters.category === 'Analgesics & Antipyretic' ? 'selected' : '' %>>Analgesics &amp; Antipyretic</option>
             <option value="Anti-Diabetic" <%= filters.category === 'Anti-Diabetic' ? 'selected' : '' %>>Anti-Diabetic</option>
@@ -150,19 +157,40 @@
         </div>
 
         <div class="filter-actions">
-          <button type="submit" class="btn btn-primary"><i class="ri-filter-fill"></i> Apply Filter</button>
-          <a href="/admin/medicines" class="btn btn-secondary"><i class="ri-refresh-line"></i> Reset</a>
+          <button type="button" class="btn btn-secondary" onclick="clearLiveSearch()"><i class="ri-refresh-line"></i> Show All</button>
         </div>
 
       </form>
+
+      <!-- A to Z Alphabet Navigation Bar -->
+      <div class="alphabet-directory-card">
+        <div class="alphabet-bar-header">
+          <span class="alphabet-bar-label">
+            <i class="ri-font-size"></i> Quick Alphabet Directory (Click any letter to filter instantly):
+          </span>
+          <span class="live-count-badge" id="liveMedCount">
+            <i class="ri-capsule-line"></i> Showing <%= medicines.length %> medicines
+          </span>
+        </div>
+        <div class="alphabet-filter-bar" id="alphabetButtonsBar">
+          <button type="button" class="alphabet-btn alphabet-btn-all active" data-letter="ALL" onclick="filterAlphabet('ALL')">ALL</button>
+          <% 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(char => { %>
+            <button type="button" class="alphabet-btn" data-letter="<%= char %>" onclick="filterAlphabet('<%= char %>')"><%= char %></button>
+          <% }) %>
+          <button type="button" class="alphabet-btn" data-letter="#" onclick="filterAlphabet('#')">0-9</button>
+        </div>
+      </div>
     </div>
 
     <!-- Medicine Rate Master Table Card -->
     <div class="card table-container-card">
       <div class="card-header-flex">
         <div class="card-header-titles">
-          <h3><i class="ri-medicine-bottle-line"></i> Master Medicine Catalog &amp; Rate Schedule (<%= medicines.length %> items)</h3>
-          <p>Columns: HSN Code, Particulars (Medicine Name), Packing, Company, Batch No, Expiry, MFG, M.R.P., Qty, Free, Rate, GST%, Tax%, and Net Rate</p>
+          <h3>
+            <i class="ri-medicine-bottle-line"></i> Master Medicine Catalog &amp; Rate Schedule
+            <span id="catalogCountHeading" style="font-size: 0.9rem; color: #0f766e; font-weight: 600; margin-left: 8px;">(<%= medicines.length %> items total)</span>
+          </h3>
+          <p>Live Alphabetical Index &bull; Columns: HSN Code, Particulars (Medicine Name), Packing, Company, Batch No, Expiry, MFG, M.R.P., Qty, Free, Rate, GST%, Tax%, and Net Rate</p>
         </div>
         <div class="card-header-tools">
           <button class="btn btn-sm btn-outline-primary" onclick="toggleAddMedicineModal(true)">
@@ -175,14 +203,14 @@
         <div class="empty-state-box">
           <div class="empty-icon"><i class="ri-capsule-line"></i></div>
           <h4>No Medicine Rates Found</h4>
-          <p>No medicines match your search criteria. Add a medicine or reset filters.</p>
+          <p>No medicines currently in catalog. Add a medicine or reset filters.</p>
           <button class="btn btn-primary" onclick="toggleAddMedicineModal(true)">
             <i class="ri-add-circle-line"></i> Add Medicine Now
           </button>
         </div>
       <% } else { %>
         <div class="table-responsive">
-          <table class="data-table medicine-full-table">
+          <table class="data-table medicine-full-table" id="medicineTable">
             <thead>
               <tr>
                 <th>HSN / SN Code</th>
@@ -199,21 +227,42 @@
                 <th>GST %</th>
                 <th>Tax %</th>
                 <th class="th-highlight">Net Rate (₹)</th>
-                <th>PDF Sheet</th>
                 <th class="text-right">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody id="medicineTableBody">
+              <!-- Live Dynamic No Results Row -->
+              <tr id="noMatchRow" style="display: none;">
+                <td colspan="15">
+                  <div class="no-match-box">
+                    <i class="ri-search-eye-line"></i>
+                    <h4 id="noMatchTitle">No Medicines Found</h4>
+                    <p id="noMatchDesc">No medicines starting with your search criteria were found.</p>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="clearLiveSearch()">
+                      <i class="ri-refresh-line"></i> Reset Filter &amp; Show All Medicines
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
               <% medicines.forEach((med, idx) => { %>
-                <tr>
+                <tr 
+                  class="med-row"
+                  data-med-name="<%= (med.medicine_name || '').toLowerCase() %>"
+                  data-generic="<%= (med.generic_name || '').toLowerCase() %>"
+                  data-category="<%= (med.category || 'General').toLowerCase() %>"
+                  data-company="<%= (med.company || med.manufacturer || '').toLowerCase() %>"
+                  data-hsn="<%= (med.hsn_code || '').toLowerCase() %>"
+                  data-batch="<%= (med.batch_no || '').toLowerCase() %>"
+                >
                   <td>
                     <code class="code-hsn"><%= med.hsn_code || '---' %></code>
                   </td>
                   <td>
                     <div class="med-name-cell">
-                      <strong><%= med.medicine_name %></strong>
+                      <strong class="med-name-text" data-original-name="<%= med.medicine_name %>"><%= med.medicine_name %></strong>
                       <% if (med.generic_name) { %>
-                        <span class="med-generic-sub"><i class="ri-flask-line"></i> <%= med.generic_name %></span>
+                        <span class="med-generic-sub" data-original-generic="<%= med.generic_name %>"><i class="ri-flask-line"></i> <%= med.generic_name %></span>
                       <% } %>
                     </div>
                   </td>
@@ -254,16 +303,6 @@
                     <div class="final-rate-pill">
                       <strong>₹<%= Number(med.final_rate).toFixed(2) %></strong>
                     </div>
-                  </td>
-                  <td>
-                    <% if (med.pdf_attachment_path) { %>
-                      <a href="<%= med.pdf_attachment_path %>" target="_blank" class="pdf-download-btn" title="View attached PDF rate sheet">
-                        <i class="ri-file-pdf-2-fill"></i>
-                        <span>PDF</span>
-                      </a>
-                    <% } else { %>
-                      <span class="text-muted" style="font-size: 0.78rem;">None</span>
-                    <% } %>
                   </td>
                   <td class="text-right actions-cell">
                     <div class="action-btn-group">
@@ -470,6 +509,7 @@
   </div>
 
   <script>
+    // Modal & Calculator Logic
     function toggleAddMedicineModal(show) {
       const modal = document.getElementById('addMedicineModal');
       modal.style.display = show ? 'flex' : 'none';
@@ -499,8 +539,243 @@
       document.getElementById('dispTaxAmt').innerText = '₹' + taxAmt.toFixed(2);
       document.getElementById('dispFinalRate').innerText = '₹' + finalVal.toFixed(2);
     }
+
+    // =========================================================
+    // INSTANT LIVE ALPHABET & KEYWORD SEARCH SYSTEM
+    // =========================================================
+
+    function escapeRegExp(string) {
+      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    function highlightMatch(element, originalText, query) {
+      if (!element || !originalText) return;
+      if (!query || query === '#') {
+        element.textContent = originalText;
+        return;
+      }
+      try {
+        const regex = new RegExp('(' + escapeRegExp(query) + ')', 'gi');
+        element.innerHTML = originalText.replace(regex, '<mark class="search-highlight">$1</mark>');
+      } catch (e) {
+        element.textContent = originalText;
+      }
+    }
+
+    function onMedSearchInput() {
+      filterMedicinesLive();
+    }
+
+    function filterAlphabet(letter) {
+      const searchInput = document.getElementById('medSearchInput');
+      if (letter === 'ALL') {
+        searchInput.value = '';
+      } else if (letter === '#') {
+        searchInput.value = '#';
+      } else {
+        searchInput.value = letter;
+      }
+      searchInput.focus();
+      filterMedicinesLive(letter);
+    }
+
+    function clearLiveSearch() {
+      const searchInput = document.getElementById('medSearchInput');
+      const catSelect = document.getElementById('medCategorySelect');
+      if (searchInput) searchInput.value = '';
+      if (catSelect) catSelect.value = 'All';
+      filterMedicinesLive('ALL');
+      if (searchInput) searchInput.focus();
+    }
+
+    function setActiveAlphabetButton(targetLetter) {
+      const buttons = document.querySelectorAll('.alphabet-btn');
+      const normalizedTarget = (targetLetter || 'ALL').toUpperCase();
+      
+      buttons.forEach(btn => {
+        const btnLetter = btn.getAttribute('data-letter');
+        if (btnLetter === normalizedTarget) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    function filterMedicinesLive(alphabetOverride) {
+      const searchInput = document.getElementById('medSearchInput');
+      const catSelect = document.getElementById('medCategorySelect');
+      const clearBtn = document.getElementById('clearSearchBtn');
+      const tbody = document.getElementById('medicineTableBody');
+      const noMatchRow = document.getElementById('noMatchRow');
+      const liveCountBadge = document.getElementById('liveMedCount');
+      const alphabetFeedback = document.getElementById('alphabetFeedback');
+
+      if (!tbody) return;
+
+      let rawQuery = (searchInput ? searchInput.value : '').trim();
+      if (alphabetOverride !== undefined) {
+        if (alphabetOverride === 'ALL') rawQuery = '';
+        else if (alphabetOverride === '#') rawQuery = '#';
+        else rawQuery = alphabetOverride;
+      }
+
+      const q = rawQuery.toLowerCase();
+      const selectedCategory = catSelect ? catSelect.value : 'All';
+
+      // Toggle Clear (X) Button Visibility
+      if (clearBtn) {
+        clearBtn.style.display = rawQuery.length > 0 ? 'inline-flex' : 'none';
+      }
+
+      // Sync active A-Z button
+      if (!rawQuery) {
+        setActiveAlphabetButton('ALL');
+      } else if (rawQuery === '#') {
+        setActiveAlphabetButton('#');
+      } else if (rawQuery.length >= 1 && /^[a-zA-Z]/.test(rawQuery)) {
+        setActiveAlphabetButton(rawQuery[0]);
+      } else {
+        setActiveAlphabetButton('');
+      }
+
+      const rows = Array.from(tbody.querySelectorAll('.med-row'));
+      const rankedRows = [];
+      let visibleCount = 0;
+
+      rows.forEach(row => {
+        const medName = row.getAttribute('data-med-name') || '';
+        const generic = row.getAttribute('data-generic') || '';
+        const category = row.getAttribute('data-category') || '';
+        const company = row.getAttribute('data-company') || '';
+        const hsn = row.getAttribute('data-hsn') || '';
+        const batch = row.getAttribute('data-batch') || '';
+
+        // Category Filter check
+        if (selectedCategory !== 'All' && category !== selectedCategory.toLowerCase()) {
+          row.style.display = 'none';
+          return;
+        }
+
+        let score = -1;
+
+        if (!q) {
+          // No search query -> show all matching category
+          score = 100;
+        } else if (q === '#') {
+          // Number search -> starts with digit 0-9
+          if (/^[0-9]/.test(medName) || /^[0-9]/.test(hsn)) {
+            score = 1000;
+          }
+        } else {
+          // Alphabet / Word matching with Starts-With priority
+          if (medName.startsWith(q)) {
+            // Priority 1: Medicine name starts with the alphabet/query (e.g. typing "a" -> "ACENEXT", "AZITHROMYCIN")
+            score = 10000 + (100 - Math.min(medName.length, 90));
+          } else if (generic.startsWith(q)) {
+            // Priority 2: Generic composition starts with query
+            score = 5000 + (100 - Math.min(generic.length, 90));
+          } else if (medName.includes(' ' + q) || medName.includes('-' + q) || medName.includes('(' + q)) {
+            // Priority 3: Word within medicine name starts with query
+            score = 3000;
+          } else if (medName.includes(q)) {
+            // Priority 4: Medicine name contains query
+            score = 2000;
+          } else if (generic.includes(q)) {
+            // Priority 5: Generic contains query
+            score = 1000;
+          } else if (company.includes(q) || hsn.includes(q) || batch.includes(q)) {
+            // Priority 6: Other fields contain query
+            score = 500;
+          }
+        }
+
+        if (score > 0) {
+          rankedRows.push({ row, score, medName });
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      // Sort rows by score descending, then alphabetically by medicine name
+      rankedRows.sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score;
+        return a.medName.localeCompare(b.medName);
+      });
+
+      // Re-insert sorted rows and apply highlighting
+      rankedRows.forEach(item => {
+        const r = item.row;
+        r.style.display = '';
+        tbody.appendChild(r); // Re-orders in DOM in prioritized sequence
+
+        // Highlight matching text in name and generic cells
+        const nameEl = r.querySelector('.med-name-text');
+        if (nameEl) {
+          const originalName = nameEl.getAttribute('data-original-name') || nameEl.textContent;
+          highlightMatch(nameEl, originalName, q);
+        }
+
+        const genEl = r.querySelector('.med-generic-sub');
+        if (genEl) {
+          const originalGen = genEl.getAttribute('data-original-generic') || genEl.textContent;
+          highlightMatch(genEl, originalGen, q);
+        }
+      });
+
+      // Handle No Results State
+      if (noMatchRow) {
+        if (visibleCount === 0) {
+          tbody.appendChild(noMatchRow);
+          noMatchRow.style.display = '';
+          const noMatchTitle = document.getElementById('noMatchTitle');
+          const noMatchDesc = document.getElementById('noMatchDesc');
+          if (noMatchTitle) {
+            noMatchTitle.innerText = rawQuery ? `No Medicines Starting With "${rawQuery.toUpperCase()}"` : 'No Medicines Found';
+          }
+          if (noMatchDesc) {
+            noMatchDesc.innerText = `No medicine records matched "${rawQuery || 'selected criteria'}". Check spelling or reset filter.`;
+          }
+        } else {
+          noMatchRow.style.display = 'none';
+        }
+      }
+
+      // Update Live Badges and Feedback
+      if (liveCountBadge) {
+        if (!rawQuery && selectedCategory === 'All') {
+          liveCountBadge.innerHTML = `<i class="ri-capsule-line"></i> Showing all <strong>${visibleCount}</strong> medicines`;
+        } else if (rawQuery.length === 1 && /^[a-zA-Z]$/.test(rawQuery)) {
+          liveCountBadge.innerHTML = `<i class="ri-search-2-line"></i> Showing <strong>${visibleCount}</strong> medicines starting with "<strong>${rawQuery.toUpperCase()}</strong>"`;
+        } else if (rawQuery) {
+          liveCountBadge.innerHTML = `<i class="ri-search-2-line"></i> Showing <strong>${visibleCount}</strong> matching medicines`;
+        } else {
+          liveCountBadge.innerHTML = `<i class="ri-filter-3-line"></i> Showing <strong>${visibleCount}</strong> in ${selectedCategory}`;
+        }
+      }
+
+      if (alphabetFeedback) {
+        if (!rawQuery) {
+          alphabetFeedback.innerHTML = `<i class="ri-flashlight-fill"></i> Instant Alphabet &amp; Name Search`;
+        } else if (rawQuery.length === 1 && /^[a-zA-Z]$/.test(rawQuery)) {
+          alphabetFeedback.innerHTML = `<i class="ri-font-size"></i> Alphabet Filter: <strong>${rawQuery.toUpperCase()}</strong> (${visibleCount} found)`;
+        } else {
+          alphabetFeedback.innerHTML = `<i class="ri-filter-fill"></i> Filter: "<strong>${rawQuery}</strong>" (${visibleCount} found)`;
+        }
+      }
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('medSearchInput');
+      if (searchInput && searchInput.value.trim() !== '') {
+        filterMedicinesLive();
+      }
+    });
   </script>
 
 </body>
 
 </html>
+

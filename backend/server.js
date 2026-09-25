@@ -173,9 +173,9 @@ app.post('/login', (req, res) => {
       };
     }
   } else {
-    // Worker / Delivery Staff Verification
-    const validWorkerUsers = ['worker', 'medicity', 'staff', 'delivery', 'agent'];
-    const validWorkerPass = ['worker 1212', 'worker1212', 'worker@medicity', 'worker123', '121212', 'medicity', 'worker'];
+    // Worker / Delivery Staff Verification (Username: staff, Password: staff1212)
+    const validWorkerUsers = ['staff', 'worker', 'medicity', 'delivery', 'agent'];
+    const validWorkerPass = ['staff1212', 'staff 1212', 'staff@1212', 'worker 1212', 'worker1212', 'worker@medicity', 'worker123', '121212', 'medicity', 'worker'];
 
     if (validWorkerUsers.includes((username || '').trim().toLowerCase()) && validWorkerPass.includes((password || '').trim())) {
       authenticatedUser = {
@@ -227,10 +227,10 @@ const CHANNEL_CONFIGS = {
     accentColor: '#0f766e',
     bgLight: '#ccfbf1',
     icon: 'ri-store-2-fill',
-    locationLabel: 'Neethi Medical Store Branch / Outlet Name',
-    locationPlaceholder: 'e.g. Neethi Medical Store, Haripad Town',
-    orderLabel: 'Neethi Invoice / Challan Ref #',
-    orderPlaceholder: 'e.g. NEETHI-HPD-8821'
+    locationLabel: 'Delivered Neethi Store Branch or Delivered Hospital Name',
+    locationPlaceholder: 'e.g. Neethi Medical Store, Haripad / Taluk Hospital',
+    orderLabel: 'Medicity Invoice Number',
+    orderPlaceholder: 'e.g. MED-INV-8821'
   },
   supplyco: {
     name: 'SUPPLYCO',
@@ -240,10 +240,10 @@ const CHANNEL_CONFIGS = {
     accentColor: '#0284c7',
     bgLight: '#e0f2fe',
     icon: 'ri-shopping-cart-2-fill',
-    locationLabel: 'Supplyco Medical Outlet / Pharmacy Name',
-    locationPlaceholder: 'e.g. Supplyco People\'s Pharmacy, Haripad',
-    orderLabel: 'Supplyco Invoice / Challan Ref #',
-    orderPlaceholder: 'e.g. SUP-MCH-4091'
+    locationLabel: 'Delivered Neethi Store Branch or Delivered Hospital Name',
+    locationPlaceholder: 'e.g. Supplyco People\'s Pharmacy, Haripad / Govt Hospital',
+    orderLabel: 'Medicity Invoice Number',
+    orderPlaceholder: 'e.g. MED-INV-4091'
   },
   others: {
     name: 'OTHERS',
@@ -253,10 +253,10 @@ const CHANNEL_CONFIGS = {
     accentColor: '#7c3aed',
     bgLight: '#f3e8ff',
     icon: 'ri-hospital-fill',
-    locationLabel: 'Hospital / Institution / Medical Agency Name',
+    locationLabel: 'Delivered Neethi Store Branch or Delivered Hospital Name',
     locationPlaceholder: 'e.g. Taluk Headquarter Hospital, Haripad',
-    orderLabel: 'Dispatch / Order Reference #',
-    orderPlaceholder: 'e.g. DGO-PHC-1049'
+    orderLabel: 'Medicity Invoice Number',
+    orderPlaceholder: 'e.g. MED-INV-1049'
   }
 };
 
@@ -581,7 +581,7 @@ app.get('/history', requireAuth, (req, res) => {
 });
 
 app.post('/deliveries', requireAuth, upload.single('signed_proof'), (req, res) => {
-  const { delivery_date, service_type, hospital_name, order_number, return_channel } = req.body;
+  const { delivery_date, service_type, hospital_name, order_number, delivery_boy, return_channel } = req.body;
 
   if (!delivery_date || !service_type || !hospital_name || !order_number) {
     const redirectUrl = return_channel ? `/upload/${return_channel}` : '/';
@@ -594,21 +594,23 @@ app.post('/deliveries', requireAuth, upload.single('signed_proof'), (req, res) =
   }
 
   const signed_proof_path = '/uploads/' + req.file.filename;
+  const deliveryBoyName = (delivery_boy || (req.user ? (req.user.displayName || req.user.username) : 'Medicity Staff')).trim();
 
   db.addDelivery({
     delivery_date,
     service_type,
     hospital_name,
     order_number,
+    delivery_boy: deliveryBoyName,
     signed_proof_path,
-    created_by: req.user.username
+    created_by: req.user ? req.user.username : 'worker'
   }, (err, newId) => {
     if (err) {
       console.error('Error adding delivery record:', err);
       return res.redirect('/?error=' + encodeURIComponent('Failed to save delivery proof record to database.'));
     }
 
-    res.redirect('/history?msg=' + encodeURIComponent(`Signed delivery proof slip for ${service_type} (${order_number}) recorded successfully!`));
+    res.redirect('/history?msg=' + encodeURIComponent(`Signed delivery proof slip for ${service_type} (${order_number}) recorded successfully by ${deliveryBoyName}!`));
   });
 });
 
@@ -647,7 +649,7 @@ app.get('/deliveries/:id/edit', requireAuth, (req, res) => {
 
 app.post('/deliveries/:id/edit', requireAuth, upload.single('signed_proof'), (req, res) => {
   const id = req.params.id;
-  const { delivery_date, service_type, hospital_name, order_number } = req.body;
+  const { delivery_date, service_type, hospital_name, order_number, delivery_boy } = req.body;
 
   if (!delivery_date || !service_type || !hospital_name || !order_number) {
     return res.redirect(`/deliveries/${id}/edit?error=` + encodeURIComponent('All fields (Date, Service Channel, Hospital Name, and Order Number) are required.'));
@@ -662,7 +664,8 @@ app.post('/deliveries/:id/edit', requireAuth, upload.single('signed_proof'), (re
       delivery_date,
       service_type,
       hospital_name,
-      order_number
+      order_number,
+      delivery_boy: (delivery_boy || existing.delivery_boy || 'Medicity Staff').trim()
     };
 
     if (req.file) {

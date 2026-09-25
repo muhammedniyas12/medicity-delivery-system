@@ -128,22 +128,56 @@
                 </div>
               </div>
 
-              <!-- Destination Hospital / Outlet Name -->
+              <!-- Destination Store / Hospital Name -->
               <div class="form-group">
                 <label class="form-label" for="hospital_name">
-                  <i class="ri-map-pin-line"></i> Hospital / Outlet Destination Name <span class="required">*</span>
+                  <i class="ri-map-pin-line"></i> Delivered Neethi Store Branch or Delivered Hospital Name <span class="required">*</span>
                 </label>
                 <input type="text" id="hospital_name" name="hospital_name" class="form-control"
                   value="<%= delivery.hospital_name %>" required>
+                <span class="form-help">Store branch, PHC, CHC, or hospital receiving medicines</span>
               </div>
 
-              <!-- Order / Dispatch Slip Number -->
+              <!-- Medicity Invoice Number -->
               <div class="form-group">
                 <label class="form-label" for="order_number">
-                  <i class="ri-file-text-line"></i> Invoice / Challan Reference # <span class="required">*</span>
+                  <i class="ri-file-text-line"></i> Medicity Invoice Number <span class="required">*</span>
                 </label>
                 <input type="text" id="order_number" name="order_number" class="form-control"
                   value="<%= delivery.order_number %>" required>
+                <span class="form-help">Medicity Wholesale Invoice / Challan Reference number</span>
+              </div>
+
+              <!-- Delivery Boy / Staff Details -->
+              <div class="form-group">
+                <label class="form-label" for="delivery_boy">
+                  <i class="ri-user-star-line"></i> Who Delivered (Delivery Boy / Staff) <span class="required">*</span>
+                </label>
+                <% const currentBoy = (delivery.delivery_boy || delivery.created_by || '').trim(); %>
+                <select id="delivery_boy" name="delivery_boy" class="form-control" required onchange="onDeliveryBoySelectChange(this.value)">
+                  <option value="" disabled <%= !currentBoy ? 'selected' : '' %>>-- Click to Select Who Delivered Medicines --</option>
+                  <option value="Ansar" <%= currentBoy.toLowerCase() === 'ansar' ? 'selected' : '' %>>Ansar</option>
+                  <option value="Haris" <%= currentBoy.toLowerCase() === 'haris' ? 'selected' : '' %>>Haris</option>
+                  <option value="Jasim" <%= currentBoy.toLowerCase() === 'jasim' ? 'selected' : '' %>>Jasim</option>
+                  <option value="Akbarsha" <%= currentBoy.toLowerCase() === 'akbarsha' ? 'selected' : '' %>>Akbarsha</option>
+                  <option value="Sajid" <%= currentBoy.toLowerCase() === 'sajid' ? 'selected' : '' %>>Sajid</option>
+                  <option value="Vishnu" <%= currentBoy.toLowerCase() === 'vishnu' ? 'selected' : '' %>>Vishnu</option>
+                  <% if (currentBoy && !['ansar','haris','jasim','akbarsha','sajid','vishnu'].includes(currentBoy.toLowerCase())) { %>
+                    <option value="<%= currentBoy %>" selected><%= currentBoy %> (Custom)</option>
+                  <% } %>
+                </select>
+
+                <!-- Quick-Tap Delivery Boy Selection Pills -->
+                <div class="delivery-boy-pills-wrap">
+                  <span style="font-size: 0.8rem; font-weight: 700; color: #64748b; margin-right: 4px;"><i class="ri-flashlight-fill" style="color: #f59e0b;"></i> Quick Select:</span>
+                  <button type="button" class="delivery-boy-pill-btn <%= currentBoy.toLowerCase() === 'ansar' ? 'active' : '' %>" onclick="selectDeliveryBoy('Ansar')"><i class="ri-user-smile-line"></i> Ansar</button>
+                  <button type="button" class="delivery-boy-pill-btn <%= currentBoy.toLowerCase() === 'haris' ? 'active' : '' %>" onclick="selectDeliveryBoy('Haris')"><i class="ri-user-smile-line"></i> Haris</button>
+                  <button type="button" class="delivery-boy-pill-btn <%= currentBoy.toLowerCase() === 'jasim' ? 'active' : '' %>" onclick="selectDeliveryBoy('Jasim')"><i class="ri-user-smile-line"></i> Jasim</button>
+                  <button type="button" class="delivery-boy-pill-btn <%= currentBoy.toLowerCase() === 'akbarsha' ? 'active' : '' %>" onclick="selectDeliveryBoy('Akbarsha')"><i class="ri-user-smile-line"></i> Akbarsha</button>
+                  <button type="button" class="delivery-boy-pill-btn <%= currentBoy.toLowerCase() === 'sajid' ? 'active' : '' %>" onclick="selectDeliveryBoy('Sajid')"><i class="ri-user-smile-line"></i> Sajid</button>
+                  <button type="button" class="delivery-boy-pill-btn <%= currentBoy.toLowerCase() === 'vishnu' ? 'active' : '' %>" onclick="selectDeliveryBoy('Vishnu')"><i class="ri-user-smile-line"></i> Vishnu</button>
+                </div>
+                <span class="form-help">Click the dropdown or tap any delivery boy name above to update who delivered</span>
               </div>
 
               <!-- Current & New Slip Image Area -->
@@ -159,7 +193,7 @@
                   </div>
                   <div class="current-slip-info">
                     <strong>Current Active Photo</strong>
-                    <p>Upload below only if you want to replace this existing paper slip photo.</p>
+                    <p>Select below only if you want to replace this existing paper slip photo with a new photo.</p>
                     <a href="<%= delivery.signed_proof_path %>" target="_blank" class="btn btn-sm btn-secondary"
                       style="margin-top: 8px;">
                       <i class="ri-zoom-in-line"></i> View Current Full Photo
@@ -167,31 +201,78 @@
                   </div>
                 </div>
 
-                <!-- Optional Replacement Picker -->
-                <div class="drop-zone" id="dropZone" style="margin-top: 14px; border-style: dashed;">
-                  <input type="file" id="signed_proof" name="signed_proof"
-                    accept="image/jpeg,image/png,image/webp,image/jpg" class="file-input"
-                    onchange="handleImagePreview(this)">
+                <!-- Hidden Master replacement file input -->
+                <input type="file" id="signed_proof" name="signed_proof"
+                  accept="image/jpeg,image/png,image/webp,image/jpg" style="position: absolute; width: 1px; height: 1px; opacity: 0;"
+                  onchange="handleMasterFileChange(this)">
 
-                  <div class="drop-zone-prompt" id="dropPrompt">
-                    <div class="upload-icon-circle" style="background: #fef3c7; color: #d97706;">
-                      <i class="ri-camera-switch-line"></i>
-                    </div>
-                    <h4>Select New Photo to REPLACE Current Slip (Optional)</h4>
-                    <p>Leave empty if you only want to correct text/dates above</p>
-                    <span class="upload-types-badge">Supported: JPG, PNG, WEBP</span>
+                <!-- Hidden inputs for Camera and Files -->
+                <input type="file" id="cameraDirectInput" accept="image/*" capture="environment" style="display: none;" onchange="handleFileSelected(this, 'Camera')">
+                <input type="file" id="galleryDirectInput" accept="image/jpeg,image/png,image/webp,image/jpg" style="display: none;" onchange="handleFileSelected(this, 'Files')">
+
+                <!-- DUAL CHOICE ACTION BOX (Optional Replacement) -->
+                <div class="dual-choice-wrapper" id="dualChoiceBox" style="margin-top: 14px;">
+                  <div class="dual-choice-header">
+                    <h4><i class="ri-camera-switch-line"></i> Replace Current Photo (Optional)</h4>
+                    <p>Snap fresh photo with camera or choose from existing files to replace the active slip</p>
                   </div>
 
-                  <div class="preview-container" id="previewContainer" style="display: none;">
-                    <img id="imagePreview" src="" alt="Proof Slip Preview" class="preview-image">
-                    <div class="preview-info-overlay">
-                      <span id="previewFileName" class="preview-filename"></span>
-                      <button type="button" class="btn btn-sm btn-change-img" onclick="resetFilePicker()">
-                        <i class="ri-refresh-line"></i> Change Photo
-                      </button>
+                  <div class="dual-choice-grid">
+                    <div class="choice-card choice-camera" onclick="triggerCameraCapture()" role="button" tabindex="0">
+                      <div class="choice-icon-wrap bg-camera-icon">
+                        <i class="ri-camera-lens-fill"></i>
+                      </div>
+                      <span class="choice-badge">OPTION 1</span>
+                      <h3 class="choice-title">Directly Snap with Camera</h3>
+                      <p class="choice-desc">Open camera now to click a new replacement photo</p>
+                      <span class="btn-choice-action">
+                        <i class="ri-camera-fill"></i> Snap New Photo
+                      </span>
+                    </div>
+
+                    <div class="choice-card choice-gallery" onclick="triggerFilePicker()" role="button" tabindex="0">
+                      <div class="choice-icon-wrap bg-gallery-icon">
+                        <i class="ri-folder-image-fill"></i>
+                      </div>
+                      <span class="choice-badge">OPTION 2</span>
+                      <h3 class="choice-title">Upload with Files</h3>
+                      <p class="choice-desc">Browse device gallery or scanned documents</p>
+                      <span class="btn-choice-action">
+                        <i class="ri-upload-cloud-2-fill"></i> Choose New File
+                      </span>
                     </div>
                   </div>
                 </div>
+
+                <!-- NEW REPLACEMENT PREVIEW (After selection) -->
+                <div class="preview-container-card" id="previewContainer" style="display: none; margin-top: 14px;">
+                  <div class="preview-card-header">
+                    <div class="preview-badge-status" id="previewSourceBadge">
+                      <i class="ri-checkbox-circle-fill"></i> New Replacement Photo Selected
+                    </div>
+                    <div class="preview-action-buttons">
+                      <button type="button" class="btn btn-sm btn-outline-camera" onclick="triggerCameraCapture()">
+                        <i class="ri-camera-line"></i> Retake
+                      </button>
+                      <button type="button" class="btn btn-sm btn-outline-file" onclick="triggerFilePicker()">
+                        <i class="ri-folder-image-line"></i> Change File
+                      </button>
+                      <button type="button" class="btn btn-sm btn-danger-remove" onclick="resetProofPhoto()">
+                        <i class="ri-delete-bin-line"></i> Cancel Replacement
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="preview-img-wrapper">
+                    <img id="imagePreview" src="" alt="New Slip Preview" class="preview-img-element">
+                  </div>
+
+                  <div class="preview-meta-bar">
+                    <span id="previewFileName" class="preview-file-title"></span>
+                    <span id="previewFileSize" class="preview-file-size"></span>
+                  </div>
+                </div>
+
               </div>
 
               <!-- Form Action Buttons -->
@@ -220,37 +301,108 @@
   </footer>
 
   <script>
-    function handleImagePreview(input) {
-      const dropPrompt = document.getElementById('dropPrompt');
-      const previewContainer = document.getElementById('previewContainer');
-      const imagePreview = document.getElementById('imagePreview');
-      const previewFileName = document.getElementById('previewFileName');
+    function triggerCameraCapture() {
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+      document.getElementById('cameraDirectInput').click();
+    }
 
+    function triggerFilePicker() {
+      document.getElementById('galleryDirectInput').click();
+    }
+
+    function handleFileSelected(input, sourceLabel) {
       if (input.files && input.files[0]) {
         const file = input.files[0];
-        const reader = new FileReader();
-
-        reader.onload = function (e) {
-          imagePreview.src = e.target.result;
-          previewFileName.textContent = 'New File: ' + file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
-          dropPrompt.style.display = 'none';
-          previewContainer.style.display = 'block';
-        };
-
-        reader.readAsDataURL(file);
+        setMasterFile(file, sourceLabel);
       }
     }
 
-    function resetFilePicker() {
-      const fileInput = document.getElementById('signed_proof');
-      const dropPrompt = document.getElementById('dropPrompt');
+    function handleMasterFileChange(input) {
+      if (input.files && input.files[0]) {
+        displayPreview(input.files[0], 'Uploaded File');
+      }
+    }
+
+    function setMasterFile(file, sourceLabel) {
+      const masterInput = document.getElementById('signed_proof');
+      try {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        masterInput.files = dt.files;
+      } catch (err) {
+        console.warn('DataTransfer fallback:', err);
+      }
+      displayPreview(file, sourceLabel);
+    }
+
+    function displayPreview(file, sourceLabel) {
+      const dualChoiceBox = document.getElementById('dualChoiceBox');
+      const previewContainer = document.getElementById('previewContainer');
+      const imagePreview = document.getElementById('imagePreview');
+      const previewFileName = document.getElementById('previewFileName');
+      const previewFileSize = document.getElementById('previewFileSize');
+      const previewSourceBadge = document.getElementById('previewSourceBadge');
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        imagePreview.src = e.target.result;
+        previewFileName.textContent = 'New Replacement: ' + (file.name || 'slip.jpg');
+        previewFileSize.textContent = (file.size / 1024).toFixed(1) + ' KB';
+        
+        if (sourceLabel === 'Camera') {
+          previewSourceBadge.innerHTML = '<i class="ri-camera-fill"></i> New Photo Snapped via Camera';
+          previewSourceBadge.style.background = '#ccfbf1';
+          previewSourceBadge.style.color = '#0f766e';
+        } else {
+          previewSourceBadge.innerHTML = '<i class="ri-folder-image-fill"></i> New Photo Uploaded from Files';
+          previewSourceBadge.style.background = '#e0f2fe';
+          previewSourceBadge.style.color = '#0284c7';
+        }
+
+        dualChoiceBox.style.display = 'none';
+        previewContainer.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function resetProofPhoto() {
+      const masterInput = document.getElementById('signed_proof');
+      const cameraInput = document.getElementById('cameraDirectInput');
+      const galleryInput = document.getElementById('galleryDirectInput');
+      const dualChoiceBox = document.getElementById('dualChoiceBox');
       const previewContainer = document.getElementById('previewContainer');
       const imagePreview = document.getElementById('imagePreview');
 
-      fileInput.value = '';
+      masterInput.value = '';
+      if (cameraInput) cameraInput.value = '';
+      if (galleryInput) galleryInput.value = '';
       imagePreview.src = '';
-      dropPrompt.style.display = 'flex';
+
+      dualChoiceBox.style.display = 'block';
       previewContainer.style.display = 'none';
+    }
+
+    // Delivery Boy Quick Selector Functions
+    function selectDeliveryBoy(name) {
+      const select = document.getElementById('delivery_boy');
+      if (select) {
+        select.value = name;
+      }
+      updateDeliveryBoyPillHighlight(name);
+    }
+
+    function onDeliveryBoySelectChange(name) {
+      updateDeliveryBoyPillHighlight(name);
+    }
+
+    function updateDeliveryBoyPillHighlight(name) {
+      document.querySelectorAll('.delivery-boy-pill-btn').forEach(btn => {
+        if (btn.textContent.trim().toLowerCase().includes(name.toLowerCase())) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
     }
   </script>
 

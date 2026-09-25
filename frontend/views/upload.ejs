@@ -130,7 +130,7 @@
                       <span class="form-help">Date when the medicines were delivered</span>
                     </div>
 
-                    <!-- Order / Dispatch Slip Number -->
+                    <!-- Medicity Invoice Number -->
                     <div class="form-group">
                       <label class="form-label" for="order_number">
                         <i class="ri-file-text-line"></i>
@@ -138,11 +138,11 @@
                       </label>
                       <input type="text" id="order_number" name="order_number" class="form-control"
                         placeholder="<%= channelInfo.orderPlaceholder %>" required>
-                      <span class="form-help">Printed invoice or challan code on paper slip</span>
+                      <span class="form-help">Medicity Wholesale Invoice / Challan Reference number</span>
                     </div>
                   </div>
 
-                  <!-- Destination Hospital / Outlet Name -->
+                  <!-- Destination Store / Hospital Name -->
                   <div class="form-group">
                     <label class="form-label" for="hospital_name">
                       <i class="ri-map-pin-line"></i>
@@ -150,40 +150,119 @@
                     </label>
                     <input type="text" id="hospital_name" name="hospital_name" class="form-control"
                       placeholder="<%= channelInfo.locationPlaceholder %>" required>
-                    <span class="form-help">Hospital, PHC, CHC, Neethi or Supplyco store receiving delivery</span>
+                    <span class="form-help">Delivered Neethi Store branch, Supplyco branch, PHC, CHC or Hospital receiving medicines</span>
                   </div>
 
-                  <!-- Paper Slip Photo Upload Area -->
+                  <!-- Delivery Boy / Staff Details -->
+                  <div class="form-group">
+                    <label class="form-label" for="delivery_boy">
+                      <i class="ri-user-star-line"></i> Who Delivered (Delivery Boy / Staff) <span class="required">*</span>
+                    </label>
+                    <select id="delivery_boy" name="delivery_boy" class="form-control" required onchange="onDeliveryBoySelectChange(this.value)">
+                      <option value="" disabled selected>-- Click to Select Who Delivered Medicines --</option>
+                      <option value="Ansar">Ansar</option>
+                      <option value="Haris">Haris</option>
+                      <option value="Jasim">Jasim</option>
+                      <option value="Akbarsha">Akbarsha</option>
+                      <option value="Sajid">Sajid</option>
+                      <option value="Vishnu">Vishnu</option>
+                    </select>
+                    
+                    <!-- Quick-Tap Delivery Boy Selection Pills -->
+                    <div class="delivery-boy-pills-wrap">
+                      <span style="font-size: 0.8rem; font-weight: 700; color: #64748b; margin-right: 4px;"><i class="ri-flashlight-fill" style="color: #f59e0b;"></i> Quick Select:</span>
+                      <button type="button" class="delivery-boy-pill-btn" onclick="selectDeliveryBoy('Ansar')"><i class="ri-user-smile-line"></i> Ansar</button>
+                      <button type="button" class="delivery-boy-pill-btn" onclick="selectDeliveryBoy('Haris')"><i class="ri-user-smile-line"></i> Haris</button>
+                      <button type="button" class="delivery-boy-pill-btn" onclick="selectDeliveryBoy('Jasim')"><i class="ri-user-smile-line"></i> Jasim</button>
+                      <button type="button" class="delivery-boy-pill-btn" onclick="selectDeliveryBoy('Akbarsha')"><i class="ri-user-smile-line"></i> Akbarsha</button>
+                      <button type="button" class="delivery-boy-pill-btn" onclick="selectDeliveryBoy('Sajid')"><i class="ri-user-smile-line"></i> Sajid</button>
+                      <button type="button" class="delivery-boy-pill-btn" onclick="selectDeliveryBoy('Vishnu')"><i class="ri-user-smile-line"></i> Vishnu</button>
+                    </div>
+                    <span class="form-help">Click the dropdown or tap any delivery boy name above to select who delivered</span>
+                  </div>
+
+                  <!-- Paper Slip Photo Upload Area (2 Clear Options: Camera & Files) -->
                   <div class="form-group upload-file-group">
-                    <label class="form-label" for="signed_proof">
-                      <i class="ri-camera-lens-fill"></i> Signed Paper Delivery Slip Photo <span
-                        class="required">*</span>
+                    <label class="form-label">
+                      <i class="ri-camera-lens-fill"></i> Signed Paper Delivery Slip Photo <span class="required">*</span>
                     </label>
 
-                    <div class="drop-zone" id="dropZone">
-                      <input type="file" id="signed_proof" name="signed_proof"
-                        accept="image/jpeg,image/png,image/webp,image/jpg" class="file-input" required
-                        onchange="handleImagePreview(this)">
+                    <!-- Master Form File Input -->
+                    <input type="file" id="signed_proof" name="signed_proof"
+                      accept="image/jpeg,image/png,image/webp,image/jpg" style="position: absolute; width: 1px; height: 1px; opacity: 0;" required
+                      onchange="handleMasterFileChange(this)">
 
-                      <div class="drop-zone-prompt" id="dropPrompt">
-                        <div class="upload-icon-circle">
-                          <i class="ri-upload-cloud-2-line"></i>
-                        </div>
-                        <h4>Tap to Snap Photo or Choose Delivery Slip Image</h4>
-                        <p>Upload signed and stamped physical delivery proof sheet</p>
-                        <span class="upload-types-badge">Supported: JPG, PNG, WEBP &bull; Max: 25MB</span>
+                    <!-- Hidden Direct Camera Input (Opens Native Phone Camera instantly) -->
+                    <input type="file" id="cameraDirectInput" accept="image/*" capture="environment" style="display: none;" onchange="handleFileSelected(this, 'Camera')">
+
+                    <!-- Hidden Files / Gallery Input -->
+                    <input type="file" id="galleryDirectInput" accept="image/jpeg,image/png,image/webp,image/jpg" style="display: none;" onchange="handleFileSelected(this, 'Files')">
+
+                    <!-- DUAL CHOICE ACTION BOX -->
+                    <div class="dual-choice-wrapper" id="dualChoiceBox">
+                      <div class="dual-choice-header">
+                        <h4><i class="ri-camera-3-fill"></i> Choose Delivery Slip Photo Option</h4>
+                        <p>Select directly snapping a fresh photo with camera or uploading from existing files</p>
                       </div>
 
-                      <div class="preview-container" id="previewContainer" style="display: none;">
-                        <img id="imagePreview" src="" alt="Proof Slip Preview" class="preview-image">
-                        <div class="preview-info-overlay">
-                          <span id="previewFileName" class="preview-filename"></span>
-                          <button type="button" class="btn btn-sm btn-change-img" onclick="resetFilePicker()">
-                            <i class="ri-refresh-line"></i> Change Photo
-                          </button>
+                      <div class="dual-choice-grid">
+                        <!-- Option 1: Directly Snap with Camera -->
+                        <div class="choice-card choice-camera" onclick="triggerCameraCapture()" role="button" tabindex="0">
+                          <div class="choice-icon-wrap bg-camera-icon">
+                            <i class="ri-camera-lens-fill"></i>
+                          </div>
+                          <span class="choice-badge">OPTION 1</span>
+                          <h3 class="choice-title">Directly Snap with Camera</h3>
+                          <p class="choice-desc">Open camera now to click an instant, live clear photo of the signed paper slip</p>
+                          <span class="btn-choice-action">
+                            <i class="ri-camera-fill"></i> Snap Photo Now
+                          </span>
+                        </div>
+
+                        <!-- Option 2: Upload with Files -->
+                        <div class="choice-card choice-gallery" onclick="triggerFilePicker()" role="button" tabindex="0">
+                          <div class="choice-icon-wrap bg-gallery-icon">
+                            <i class="ri-folder-image-fill"></i>
+                          </div>
+                          <span class="choice-badge">OPTION 2</span>
+                          <h3 class="choice-title">Upload with Files</h3>
+                          <p class="choice-desc">Browse your phone/computer gallery, recent photos, or scanned image documents</p>
+                          <span class="btn-choice-action">
+                            <i class="ri-upload-cloud-2-fill"></i> Choose from Files
+                          </span>
                         </div>
                       </div>
                     </div>
+
+                    <!-- PHOTO PREVIEW CONTAINER (After capture or upload) -->
+                    <div class="preview-container-card" id="previewContainer" style="display: none;">
+                      <div class="preview-card-header">
+                        <div class="preview-badge-status" id="previewSourceBadge">
+                          <i class="ri-checkbox-circle-fill"></i> Photo Attached &amp; Ready
+                        </div>
+                        <div class="preview-action-buttons">
+                          <button type="button" class="btn btn-sm btn-outline-camera" onclick="triggerCameraCapture()" title="Retake with camera">
+                            <i class="ri-camera-line"></i> Retake (Camera)
+                          </button>
+                          <button type="button" class="btn btn-sm btn-outline-file" onclick="triggerFilePicker()" title="Choose different file">
+                            <i class="ri-folder-image-line"></i> Choose File
+                          </button>
+                          <button type="button" class="btn btn-sm btn-danger-remove" onclick="resetProofPhoto()" title="Remove photo">
+                            <i class="ri-delete-bin-line"></i> Remove
+                          </button>
+                        </div>
+                      </div>
+
+                      <div class="preview-img-wrapper">
+                        <img id="imagePreview" src="" alt="Proof Slip Preview" class="preview-img-element">
+                      </div>
+
+                      <div class="preview-meta-bar">
+                        <span id="previewFileName" class="preview-file-title"></span>
+                        <span id="previewFileSize" class="preview-file-size"></span>
+                      </div>
+                    </div>
+
                   </div>
 
                   <!-- Form Action Buttons -->
@@ -205,6 +284,41 @@
 
   </main>
 
+  <!-- LIVE CAMERA VIEWFINDER MODAL (For Desktop / Tablet Webcam Live Stream) -->
+  <div class="modal-overlay" id="cameraModal" style="display: none;">
+    <div class="modal-card" style="max-width: 680px;">
+      <div class="modal-header">
+        <div class="modal-title-box">
+          <div class="modal-icon-badge"><i class="ri-camera-lens-fill"></i></div>
+          <div>
+            <h3>Live Camera Slip Capture</h3>
+            <p>Position the signed paper delivery slip in frame</p>
+          </div>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="closeCameraModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="camera-viewfinder-box">
+          <video id="cameraVideo" class="camera-video-stream" autoplay playsinline muted></video>
+          <canvas id="cameraCanvas" style="display: none;"></canvas>
+          <div class="camera-overlay-guides">
+            <span><i class="ri-scan-2-line"></i> Align Signed Delivery Slip Here</span>
+          </div>
+        </div>
+
+        <div class="camera-controls-bar">
+          <button type="button" class="btn btn-secondary" onclick="switchCameraFacing()">
+            <i class="ri-camera-switch-line"></i> Flip Camera
+          </button>
+          <button type="button" class="btn-snap-photo" onclick="captureLivePhoto()">
+            <i class="ri-camera-fill"></i> Click &amp; Capture Photo
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <footer class="app-footer">
     <div class="footer-container">
       <p>&copy; MEDICITY PHARMACEUTICAL HARIPAD &bull; Wholesale Institutional Medicine Supply Desk</p>
@@ -212,37 +326,199 @@
   </footer>
 
   <script>
-    function handleImagePreview(input) {
-      const dropPrompt = document.getElementById('dropPrompt');
-      const previewContainer = document.getElementById('previewContainer');
-      const imagePreview = document.getElementById('imagePreview');
-      const previewFileName = document.getElementById('previewFileName');
+    let activeCameraStream = null;
+    let currentFacingMode = 'environment';
 
-      if (input.files && input.files[0]) {
-        const file = input.files[0];
-        const reader = new FileReader();
-
-        reader.onload = function (e) {
-          imagePreview.src = e.target.result;
-          previewFileName.textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
-          dropPrompt.style.display = 'none';
-          previewContainer.style.display = 'block';
-        };
-
-        reader.readAsDataURL(file);
+    // Option 1: Trigger Camera Snap
+    function triggerCameraCapture() {
+      // Check if mobile device -> open native device camera immediately
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+      
+      if (isMobile) {
+        document.getElementById('cameraDirectInput').click();
+      } else {
+        // Desktop / Laptop: Try opening live camera viewfinder modal with WebRTC
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          openCameraModal();
+        } else {
+          document.getElementById('cameraDirectInput').click();
+        }
       }
     }
 
-    function resetFilePicker() {
-      const fileInput = document.getElementById('signed_proof');
-      const dropPrompt = document.getElementById('dropPrompt');
+    // Option 2: Trigger File Picker (Gallery / Documents)
+    function triggerFilePicker() {
+      document.getElementById('galleryDirectInput').click();
+    }
+
+    // Handle File selected from either Camera or File Picker
+    function handleFileSelected(input, sourceLabel) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        setMasterFile(file, sourceLabel);
+      }
+    }
+
+    // Handle Master file change directly
+    function handleMasterFileChange(input) {
+      if (input.files && input.files[0]) {
+        displayPreview(input.files[0], 'Uploaded File');
+      }
+    }
+
+    // Set Master file using DataTransfer
+    function setMasterFile(file, sourceLabel) {
+      const masterInput = document.getElementById('signed_proof');
+      
+      try {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        masterInput.files = dt.files;
+      } catch (err) {
+        console.warn('DataTransfer not fully supported, using input clone:', err);
+      }
+
+      displayPreview(file, sourceLabel);
+    }
+
+    // Display high-definition image preview and metadata
+    function displayPreview(file, sourceLabel) {
+      const dualChoiceBox = document.getElementById('dualChoiceBox');
+      const previewContainer = document.getElementById('previewContainer');
+      const imagePreview = document.getElementById('imagePreview');
+      const previewFileName = document.getElementById('previewFileName');
+      const previewFileSize = document.getElementById('previewFileSize');
+      const previewSourceBadge = document.getElementById('previewSourceBadge');
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        imagePreview.src = e.target.result;
+        previewFileName.textContent = file.name || 'signed_delivery_slip.jpg';
+        previewFileSize.textContent = (file.size / 1024).toFixed(1) + ' KB';
+        
+        if (sourceLabel === 'Camera') {
+          previewSourceBadge.innerHTML = '<i class="ri-camera-fill"></i> Photo Snapped via Camera';
+          previewSourceBadge.style.background = '#ccfbf1';
+          previewSourceBadge.style.color = '#0f766e';
+        } else {
+          previewSourceBadge.innerHTML = '<i class="ri-folder-image-fill"></i> Uploaded from Device Files';
+          previewSourceBadge.style.background = '#e0f2fe';
+          previewSourceBadge.style.color = '#0284c7';
+        }
+
+        dualChoiceBox.style.display = 'none';
+        previewContainer.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Reset / Remove Photo
+    function resetProofPhoto() {
+      const masterInput = document.getElementById('signed_proof');
+      const cameraInput = document.getElementById('cameraDirectInput');
+      const galleryInput = document.getElementById('galleryDirectInput');
+      const dualChoiceBox = document.getElementById('dualChoiceBox');
       const previewContainer = document.getElementById('previewContainer');
       const imagePreview = document.getElementById('imagePreview');
 
-      fileInput.value = '';
+      masterInput.value = '';
+      if (cameraInput) cameraInput.value = '';
+      if (galleryInput) galleryInput.value = '';
       imagePreview.src = '';
-      dropPrompt.style.display = 'flex';
+
+      dualChoiceBox.style.display = 'block';
       previewContainer.style.display = 'none';
+    }
+
+    // WebRTC Live Camera Modal Handlers (Desktop & Laptop Viewfinder)
+    function openCameraModal() {
+      const modal = document.getElementById('cameraModal');
+      modal.style.display = 'flex';
+      startCameraStream();
+    }
+
+    function closeCameraModal() {
+      const modal = document.getElementById('cameraModal');
+      modal.style.display = 'none';
+      stopCameraStream();
+    }
+
+    function startCameraStream() {
+      const video = document.getElementById('cameraVideo');
+      stopCameraStream();
+
+      const constraints = {
+        video: {
+          facingMode: currentFacingMode,
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        }
+      };
+
+      navigator.mediaDevices.getUserMedia(constraints)
+        .then(stream => {
+          activeCameraStream = stream;
+          video.srcObject = stream;
+        })
+        .catch(err => {
+          console.error('Webcam stream error:', err);
+          closeCameraModal();
+          // Fallback to native camera input
+          document.getElementById('cameraDirectInput').click();
+        });
+    }
+
+    function stopCameraStream() {
+      if (activeCameraStream) {
+        activeCameraStream.getTracks().forEach(track => track.stop());
+        activeCameraStream = null;
+      }
+    }
+
+    function switchCameraFacing() {
+      currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+      startCameraStream();
+    }
+
+    function captureLivePhoto() {
+      const video = document.getElementById('cameraVideo');
+      const canvas = document.getElementById('cameraCanvas');
+      if (!video || !canvas) return;
+
+      canvas.width = video.videoWidth || 1280;
+      canvas.height = video.videoHeight || 720;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob(blob => {
+        const fileName = 'medicity_slip_' + Date.now() + '.jpg';
+        const file = new File([blob], fileName, { type: 'image/jpeg' });
+        setMasterFile(file, 'Camera');
+        closeCameraModal();
+      }, 'image/jpeg', 0.92);
+    }
+
+    // Delivery Boy Quick Selector Functions
+    function selectDeliveryBoy(name) {
+      const select = document.getElementById('delivery_boy');
+      if (select) {
+        select.value = name;
+      }
+      updateDeliveryBoyPillHighlight(name);
+    }
+
+    function onDeliveryBoySelectChange(name) {
+      updateDeliveryBoyPillHighlight(name);
+    }
+
+    function updateDeliveryBoyPillHighlight(name) {
+      document.querySelectorAll('.delivery-boy-pill-btn').forEach(btn => {
+        if (btn.textContent.trim().includes(name)) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
     }
   </script>
 

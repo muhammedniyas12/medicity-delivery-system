@@ -158,16 +158,23 @@
             </div>
 
             <div class="detail-item">
-              <span class="detail-label"><i class="ri-building-line"></i> Receiving Hospital / Store</span>
+              <span class="detail-label"><i class="ri-building-line"></i> Delivered Neethi Store Branch / Hospital Name</span>
               <span class="detail-value" style="font-size: 1.05rem; font-weight: 700; color: var(--primary);">
                 <%= delivery.hospital_name %>
               </span>
             </div>
 
             <div class="detail-item">
-              <span class="detail-label"><i class="ri-file-text-line"></i> Invoice / Challan Number</span>
+              <span class="detail-label"><i class="ri-file-text-line"></i> Medicity Invoice Number</span>
               <span class="detail-value">
                 <code class="order-code" style="font-size: 1rem;"><%= delivery.order_number %></code>
+              </span>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label"><i class="ri-user-star-line"></i> Delivered By (Delivery Staff)</span>
+              <span class="detail-value" style="font-size: 0.95rem; font-weight: 700; color: #0f766e;">
+                <i class="ri-user-follow-fill"></i> <%= delivery.delivery_boy || delivery.created_by || 'Medicity Staff' %>
               </span>
             </div>
 

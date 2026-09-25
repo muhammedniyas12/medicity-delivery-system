@@ -21,6 +21,7 @@ db.serialize(() => {
       service_type TEXT NOT NULL,
       hospital_name TEXT NOT NULL,
       order_number TEXT NOT NULL,
+      delivery_boy TEXT DEFAULT 'Medicity Staff',
       signed_proof_path TEXT NOT NULL,
       created_by TEXT DEFAULT 'worker',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -30,6 +31,9 @@ db.serialize(() => {
       console.error('Error creating deliveries table:', err.message);
     } else {
       console.log('Deliveries table initialized successfully.');
+      // Safe column migration if existing table
+      db.run("ALTER TABLE deliveries ADD COLUMN delivery_boy TEXT DEFAULT 'Medicity Staff'", () => {});
+      db.run("ALTER TABLE deliveries ADD COLUMN created_by TEXT DEFAULT 'worker'", () => {});
     }
   });
 
@@ -88,8 +92,9 @@ function getDeliveries(filters = {}, callback) {
   }
 
   if (filters.hospital_name && filters.hospital_name.trim() !== '') {
-    sql += ' AND hospital_name LIKE ?';
-    params.push(`%${filters.hospital_name.trim()}%`);
+    sql += ' AND (hospital_name LIKE ? OR order_number LIKE ? OR delivery_boy LIKE ? OR created_by LIKE ?)';
+    const term = `%${filters.hospital_name.trim()}%`;
+    params.push(term, term, term, term);
   }
 
   sql += ' ORDER BY delivery_date DESC, id DESC';
@@ -107,14 +112,15 @@ function getDeliveryById(id, callback) {
 
 function addDelivery(data, callback) {
   const sql = `
-    INSERT INTO deliveries (delivery_date, service_type, hospital_name, order_number, signed_proof_path, created_by)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO deliveries (delivery_date, service_type, hospital_name, order_number, delivery_boy, signed_proof_path, created_by)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `;
   const params = [
     data.delivery_date,
     data.service_type,
     data.hospital_name,
     data.order_number,
+    data.delivery_boy || data.created_by || 'Medicity Staff',
     data.signed_proof_path,
     data.created_by || 'worker'
   ];
@@ -157,7 +163,7 @@ function updateDelivery(id, data, callback) {
   if (data.signed_proof_path) {
     sql = `
       UPDATE deliveries 
-      SET delivery_date = ?, service_type = ?, hospital_name = ?, order_number = ?, signed_proof_path = ?
+      SET delivery_date = ?, service_type = ?, hospital_name = ?, order_number = ?, delivery_boy = ?, signed_proof_path = ?
       WHERE id = ?
     `;
     params = [
@@ -165,13 +171,14 @@ function updateDelivery(id, data, callback) {
       data.service_type,
       data.hospital_name,
       data.order_number,
+      data.delivery_boy || 'Medicity Staff',
       data.signed_proof_path,
       id
     ];
   } else {
     sql = `
       UPDATE deliveries 
-      SET delivery_date = ?, service_type = ?, hospital_name = ?, order_number = ?
+      SET delivery_date = ?, service_type = ?, hospital_name = ?, order_number = ?, delivery_boy = ?
       WHERE id = ?
     `;
     params = [
@@ -179,6 +186,7 @@ function updateDelivery(id, data, callback) {
       data.service_type,
       data.hospital_name,
       data.order_number,
+      data.delivery_boy || 'Medicity Staff',
       id
     ];
   }
@@ -207,18 +215,30 @@ function getMedicines(filters = {}, callback) {
   let sql = 'SELECT * FROM medicines WHERE 1=1';
   const params = [];
 
-  if (filters.search && filters.search.trim() !== '') {
+  const hasSearch = filters.search && filters.search.trim() !== '';
+
+  if (hasSearch) {
+    const raw = filters.search.trim();
+    const startsWith = `${raw}%`;
+    const contains = `%${raw}%`;
     sql += ' AND (medicine_name LIKE ? OR generic_name LIKE ? OR company LIKE ? OR manufacturer LIKE ? OR hsn_code LIKE ? OR batch_no LIKE ?)';
-    const term = `%${filters.search.trim()}%`;
-    params.push(term, term, term, term, term, term);
-  }
+    params.push(contains, contains, contains, contains, contains, contains);
 
-  if (filters.category && filters.category !== 'All') {
-    sql += ' AND category = ?';
-    params.push(filters.category);
-  }
+    if (filters.category && filters.category !== 'All') {
+      sql += ' AND category = ?';
+      params.push(filters.category);
+    }
 
-  sql += ' ORDER BY medicine_name ASC';
+    // Rank starts-with matches first, then generic starts-with, then contains, then alphabetical
+    sql += ' ORDER BY CASE WHEN UPPER(medicine_name) LIKE UPPER(?) THEN 0 WHEN UPPER(generic_name) LIKE UPPER(?) THEN 1 WHEN UPPER(medicine_name) LIKE UPPER(?) THEN 2 ELSE 3 END, medicine_name ASC';
+    params.push(startsWith, startsWith, contains);
+  } else {
+    if (filters.category && filters.category !== 'All') {
+      sql += ' AND category = ?';
+      params.push(filters.category);
+    }
+    sql += ' ORDER BY medicine_name ASC';
+  }
 
   db.all(sql, params, (err, rows) => {
     callback(err, rows);

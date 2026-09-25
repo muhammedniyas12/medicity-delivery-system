@@ -280,8 +280,9 @@
                   <th># ID</th>
                   <th>Delivery Date</th>
                   <th>Service Channel</th>
-                  <th>Hospital / Medical Outlet Name</th>
-                  <th>Invoice / Order #</th>
+                  <th>Delivered Neethi Store Branch / Hospital Name</th>
+                  <th>Medicity Invoice Number</th>
+                  <th>Delivered By</th>
                   <th>Signed Proof Slip</th>
                   <th class="text-right">Actions</th>
                 </tr>
@@ -312,6 +313,12 @@
                     </td>
                     <td>
                       <code class="order-code"><%= d.order_number %></code>
+                    </td>
+                    <td>
+                      <div style="display: flex; align-items: center; gap: 5px; font-weight: 600; color: #0f766e; font-size: 0.84rem;">
+                        <i class="ri-user-star-fill" style="color: #0f766e;"></i>
+                        <span><%= d.delivery_boy || d.created_by || 'Medicity Staff' %></span>
+                      </div>
                     </td>
                     <td>
                       <a href="<%= d.signed_proof_path %>" target="_blank" class="slip-thumbnail-link">

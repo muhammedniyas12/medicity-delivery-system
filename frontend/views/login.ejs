@@ -91,7 +91,7 @@
 
         <div class="form-group">
           <label class="form-label" for="username">
-            <i class="ri-user-smile-line"></i> <span id="usernameLabel"><%= activeTab === 'admin' ? 'Admin Username' : 'Worker / Staff Username' %></span>
+            <i class="ri-user-smile-line"></i> <span id="usernameLabel"><%= activeTab === 'admin' ? 'Admin Username' : 'Staff / Worker Username' %></span>
           </label>
           <div class="input-icon-wrapper">
             <input 
@@ -99,7 +99,7 @@
               id="username" 
               name="username" 
               class="form-control" 
-              placeholder="<%= activeTab === 'admin' ? 'Enter admin username' : 'Enter worker username' %>" 
+              placeholder="<%= activeTab === 'admin' ? 'Enter admin username' : 'Enter staff username (e.g. staff)' %>" 
               autocomplete="off"
               value=""
               required 
@@ -206,9 +206,9 @@
           <p>Upload signed delivery proof slips for Neethi, Supplyco &amp; Govt Hospitals</p>
         `;
 
-        usernameLabel.innerText = 'Worker / Staff Username';
-        usernameInput.placeholder = 'Enter worker username';
-        btnText.innerText = 'Sign In as Delivery Worker';
+        usernameLabel.innerText = 'Staff / Worker Username';
+        usernameInput.placeholder = 'Enter staff username (e.g. staff)';
+        btnText.innerText = 'Sign In as Staff / Worker';
       }
     }
 
